@@ -1,0 +1,186 @@
+<div class="booking-page">
+
+  <!--  Header  -->
+  <div class="page-header">
+    <h2 class="page-title">Book an Appointment</h2>
+    <p class="page-sub">Follow the steps to schedule your consultation</p>
+  </div>
+
+  <!--  Stepper  -->
+  <div class="stepper">
+    <div *ngFor="let s of steps; let i = index"
+         class="step-item"
+         [class.active]="step === s"
+         [class.done]="stepIndex > i">
+      <div class="step-dot">
+        <span *ngIf="stepIndex > i">✓</span>
+        <span *ngIf="stepIndex <= i">{{ i + 1 }}</span>
+      </div>
+      <span class="step-label">{{ stepLabel(s) }}</span>
+      <div class="step-line" *ngIf="i < steps.length - 1"></div>
+    </div>
+  </div>
+
+  <!--  Patient profile missing warning  -->
+  <div class="profile-warn" *ngIf="!loadingPatient && !patientId">
+    ⚠️ Your patient profile is not set up yet. Please contact the admin before booking.
+  </div>
+
+  <!-- STEP 1: DOCTOR SELECTION -->
+  <div class="step-panel" *ngIf="step === 'doctor'">
+
+    <div class="filters-bar">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" [(ngModel)]="search" (ngModelChange)="onSearch()"
+               placeholder="Search doctors..." class="search-input">
+      </div>
+      <select class="spec-select" [(ngModel)]="specializationId" (ngModelChange)="loadDoctors()">
+        <option [ngValue]="undefined">All Specializations</option>
+        <option *ngFor="let s of specializations" [ngValue]="s.id">{{ s.name }}</option>
+      </select>
+    </div>
+
+    <div class="loader-wrap" *ngIf="loadingDoctors">
+      <div class="spinner"></div>
+    </div>
+
+    <div class="empty-state" *ngIf="!loadingDoctors && doctors.length === 0">
+      <p>No doctors found.</p>
+    </div>
+
+    <div class="doctor-pick-grid" *ngIf="!loadingDoctors">
+      <div class="doctor-pick-card" *ngFor="let doc of doctors"
+           (click)="selectDoctor(doc)">
+        <div class="pick-avatar">{{ doc.fullName.split(' ')[1]?.[0] ?? 'D' }}</div>
+        <div class="pick-info">
+          <p class="pick-name">{{ doc.fullName }}</p>
+          <span class="pick-spec">{{ doc.specializationName }}</span>
+          <p class="pick-meta">{{ doc.experienceYears }} yrs · ₹{{ doc.consultationFee }}</p>
+        </div>
+        <span class="pick-avail" [class.yes]="doc.isAvailableToday">
+          {{ doc.isAvailableToday ? '● Today' : '○' }}
+        </span>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- STEP 2: DATE & TIME -->
+  
+  <div class="step-panel" *ngIf="step === 'date' && selectedDoctor">
+
+    <div class="selected-doctor-bar">
+      <div class="sdb-avatar">{{ selectedDoctor.fullName.split(' ')[1]?.[0] ?? 'D' }}</div>
+      <div class="sdb-info">
+        <p class="sdb-name">{{ selectedDoctor.fullName }}</p>
+        <span class="sdb-spec">{{ selectedDoctor.specializationName }}</span>
+      </div>
+      <button class="btn-change" (click)="changeDoctor()">Change</button>
+    </div>
+
+    <div class="date-row">
+      <label class="date-label">Select date</label>
+      <input type="date" class="date-input" [(ngModel)]="selectedDate"
+             [min]="minDate" (change)="onDateChange()">
+      <span class="day-name" *ngIf="selectedDate">{{ dayName }}</span>
+    </div>
+
+    <div class="slots-loader" *ngIf="loadingSlots">
+      <div class="spinner sm"></div> Loading slots...
+    </div>
+
+    <div class="no-slots"
+         *ngIf="!loadingSlots && slots && slots.availableSlots.length === 0 && slots.bookedSlots.length === 0">
+      🚫 Not available on {{ dayName }}. Please pick another date.
+    </div>
+
+    <div class="slot-grid" *ngIf="!loadingSlots && slots && slots.availableSlots.length > 0">
+      <button *ngFor="let slot of slots.availableSlots"
+              class="slot-btn"
+              [class.selected]="selectedSlot === slot"
+              (click)="selectSlot(slot)">
+        {{ slot }}
+      </button>
+      <button *ngFor="let slot of slots.bookedSlots" class="slot-btn booked" disabled>
+        {{ slot }}
+      </button>
+    </div>
+
+  </div>
+
+  <!-- STEP 3: REASON -->
+  <div class="step-panel" *ngIf="step === 'reason'">
+
+    <h3 class="section-title">Reason for visit (optional)</h3>
+    <textarea class="reason-input"
+              [(ngModel)]="reasonForVisit"
+              maxlength="500"
+              rows="5"
+              placeholder="Describe your symptoms or reason for this visit..."></textarea>
+    <p class="char-count">{{ reasonForVisit.length }} / 500</p>
+
+  </div>
+
+  <!-- STEP 4: CONFIRM -->
+  <div class="step-panel" *ngIf="step === 'confirm' && selectedDoctor">
+
+    <h3 class="section-title">Review your appointment</h3>
+
+    <div class="confirm-card">
+      <div class="confirm-row">
+        <span class="confirm-label">👨‍⚕️ Doctor</span>
+        <span class="confirm-val">{{ selectedDoctor.fullName }}</span>
+      </div>
+      <div class="confirm-row">
+        <span class="confirm-label">🏷️ Specialization</span>
+        <span class="confirm-val">{{ selectedDoctor.specializationName }}</span>
+      </div>
+      <div class="confirm-row">
+        <span class="confirm-label">📅 Date</span>
+        <span class="confirm-val">{{ formatDate(selectedDate) }}</span>
+      </div>
+      <div class="confirm-row">
+        <span class="confirm-label">⏰ Time</span>
+        <span class="confirm-val">{{ selectedSlot }}</span>
+      </div>
+      <div class="confirm-row" *ngIf="reasonForVisit">
+        <span class="confirm-label">📝 Reason</span>
+        <span class="confirm-val">{{ reasonForVisit }}</span>
+      </div>
+      <div class="confirm-row total">
+        <span class="confirm-label">💳 Consultation fee</span>
+        <span class="confirm-val fee">₹{{ selectedDoctor.consultationFee | number }}</span>
+      </div>
+    </div>
+
+    <p class="confirm-note">
+      Your appointment will be created with <strong>PENDING</strong> status.
+      The doctor will confirm it shortly — you'll be notified in real time.
+    </p>
+
+  </div>
+
+  <!-- Navigation buttons  -->
+  <div class="nav-buttons" *ngIf="selectedDoctor || step === 'doctor'">
+    <button class="btn-prev" *ngIf="stepIndex > 0" (click)="prevStep()">
+      ← Back
+    </button>
+
+    <button class="btn-next"
+            *ngIf="step !== 'confirm'"
+            [disabled]="step === 'doctor' && !selectedDoctor"
+            (click)="nextStep()">
+      Continue →
+    </button>
+
+    <button class="btn-confirm-final"
+            *ngIf="step === 'confirm'"
+            [disabled]="submitting"
+            (click)="confirmBooking()">
+      {{ submitting ? 'Booking...' : '✅ Confirm Booking' }}
+    </button>
+  </div>
+
+</div>
