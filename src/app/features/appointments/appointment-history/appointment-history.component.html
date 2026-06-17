@@ -1,0 +1,51 @@
+<div class="history-page">
+
+  <button class="btn-back" (click)="router.navigate(['/appointments'])">← Back</button>
+
+  <div class="loader-wrap" *ngIf="loading">
+    <div class="spinner"></div>
+  </div>
+
+  <div *ngIf="!loading && appointment">
+
+    <!-- Summary -->
+    <div class="summary-card">
+      <h2>Appointment #{{ appointment.id }}</h2>
+      <div class="summary-grid">
+        <div><span class="lbl">Doctor</span><p>{{ appointment.doctorName }}</p></div>
+        <div><span class="lbl">Patient</span><p>{{ appointment.patientName }}</p></div>
+        <div><span class="lbl">Date</span><p>{{ appointment.appointmentDate | date:'dd MMM yyyy' }}</p></div>
+        <div><span class="lbl">Time</span><p>{{ appointment.appointmentTime }}</p></div>
+        <div><span class="lbl">Current status</span><p>{{ appointment.statusName }}</p></div>
+      </div>
+    </div>
+
+    <!-- Timeline -->
+    <h3 class="timeline-title">Audit trail</h3>
+
+    <div class="empty-history" *ngIf="history.length === 0">
+      No history recorded yet.
+    </div>
+
+    <div class="timeline">
+      <div class="tl-item" *ngFor="let h of history; let last = last">
+        <div class="tl-dot" [ngClass]="actionClass(h.action)">
+          {{ actionIcon(h.action) }}
+        </div>
+        <div class="tl-line" *ngIf="!last"></div>
+        <div class="tl-content">
+          <div class="tl-top">
+            <strong>{{ h.action }}</strong>
+            <span class="tl-time">{{ h.changedAt | date:'dd MMM yyyy, HH:mm' }}</span>
+          </div>
+          <p class="tl-transition" *ngIf="h.oldStatus">
+            {{ h.oldStatus }} → {{ h.newStatus }}
+          </p>
+          <p class="tl-by">by {{ h.changedByName }} ({{ h.changedByRole }})</p>
+          <p class="tl-notes" *ngIf="h.notes">"{{ h.notes }}"</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

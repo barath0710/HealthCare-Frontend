@@ -1,0 +1,70 @@
+.history-page { max-width: 700px; }
+
+.btn-back {
+  background: #f3f4f6; border: 1px solid #e5e7eb; color: #374151;
+  padding: 8px 16px; border-radius: 8px; font-size: 13px;
+  cursor: pointer; margin-bottom: 20px;
+  &:hover { background: #e5e7eb; }
+}
+
+.loader-wrap { display: flex; justify-content: center; padding: 60px; }
+.spinner {
+  width: 36px; height: 36px; border: 3px solid #e5e7eb;
+  border-top-color: #667eea; border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.summary-card {
+  background: #fff; border-radius: 14px; padding: 20px;
+  border: 1px solid #e5e7eb; margin-bottom: 24px;
+  h2 { font-size: 18px; margin: 0 0 14px; color: #111827; }
+}
+
+.summary-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 14px;
+  .lbl { font-size: 11px; color: #9ca3af; text-transform: uppercase; font-weight: 600; }
+  p { font-size: 14px; color: #111827; margin: 2px 0 0; }
+}
+
+.timeline-title { font-size: 16px; font-weight: 600; color: #374151; margin: 0 0 16px; }
+
+.empty-history { color: #9ca3af; text-align: center; padding: 30px; }
+
+.timeline { position: relative; }
+
+.tl-item {
+  display: flex; gap: 14px; position: relative; padding-bottom: 24px;
+}
+
+.tl-dot {
+  width: 34px; height: 34px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; flex-shrink: 0; z-index: 2;
+  &.hl-blue  { background: #dbeafe; }
+  &.hl-green { background: #dcfce7; }
+  &.hl-teal  { background: #ccfbf1; }
+  &.hl-red   { background: #fee2e2; }
+  &.hl-amber { background: #fef3c7; }
+  &.hl-gray  { background: #f3f4f6; }
+}
+
+.tl-line {
+  position: absolute; left: 17px; top: 34px;
+  width: 2px; height: calc(100% - 34px);
+  background: #e5e7eb; z-index: 1;
+}
+
+.tl-content { flex: 1; padding-top: 4px; }
+
+.tl-top {
+  display: flex; justify-content: space-between;
+  align-items: center; margin-bottom: 4px;
+  strong { font-size: 13px; color: #111827; }
+}
+
+.tl-time { font-size: 11px; color: #9ca3af; }
+.tl-transition { font-size: 13px; color: #6b7280; margin: 2px 0; }
+.tl-by { font-size: 12px; color: #9ca3af; margin: 2px 0; }
+.tl-notes { font-size: 13px; color: #4b5563; font-style: italic; margin: 4px 0 0; }

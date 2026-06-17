@@ -1,0 +1,145 @@
+<div class="appt-list-page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h2 class="page-title">{{ pageTitle }}</h2>
+      <p class="page-sub" *ngIf="!loading">
+        {{ totalCount }} appointment{{ totalCount !== 1 ? 's' : '' }}
+      </p>
+    </div>
+    <div class="header-right">
+      <span class="live-chip" *ngIf="auth.isDoctor() || auth.isPatient()">
+        <span class="dot" [class.active]="signalr.isConnected"></span>
+        {{ signalr.isConnected ? 'Live' : 'Offline' }}
+      </span>
+      <button class="btn-book" *ngIf="auth.isPatient()" routerLink="/appointments/book">
+        + Book Appointment
+      </button>
+    </div>
+  </div>
+
+  <!-- Filter (Admin only) -->
+  <div class="filters-bar" *ngIf="auth.isAdmin()">
+    <select class="status-select" [(ngModel)]="statusFilter" (ngModelChange)="onStatusFilterChange()">
+      <option value="">All Statuses</option>
+      <option *ngFor="let s of statuses" [value]="s.code">{{ s.name }}</option>
+    </select>
+  </div>
+
+  <!-- Loader -->
+  <div class="loader-wrap" *ngIf="loading">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="!loading && appointments.length === 0">
+    <div class="empty-icon">📅</div>
+    <h3>No appointments</h3>
+    <p>{{ emptyMessage }}</p>
+    <button class="btn-book" *ngIf="auth.isPatient()" routerLink="/appointments/book">
+      Book your first appointment
+    </button>
+  </div>
+
+  <!-- Appointment cards  -->
+  <div class="appt-cards" *ngIf="!loading && appointments.length > 0">
+
+    <div class="appt-card" *ngFor="let a of appointments">
+
+      <!-- Date block -->
+      <div class="date-block">
+        <span class="date-day">{{ a.appointmentDate | date:'dd' }}</span>
+        <span class="date-month">{{ a.appointmentDate | date:'MMM' }}</span>
+        <span class="date-time">{{ a.appointmentTime }}</span>
+      </div>
+
+      <!-- Body -->
+      <div class="appt-body">
+        <div class="appt-top">
+          <p class="appt-name">
+            {{ auth.isDoctor() ? a.patientName : a.doctorName }}
+          </p>
+          <span class="badge" [ngClass]="statusClass(a.statusCode)">
+            {{ a.statusName }}
+          </span>
+        </div>
+
+        <p class="appt-sub" *ngIf="!auth.isDoctor()">{{ a.doctorSpecialization }}</p>
+        <p class="appt-reason" *ngIf="a.reasonForVisit">📝 {{ a.reasonForVisit }}</p>
+        <p class="appt-rescheduled" *ngIf="a.rescheduledFrom">
+          🔄 Rescheduled from {{ a.rescheduledFrom | date:'dd MMM yyyy' }}
+        </p>
+        <p class="appt-notes" *ngIf="a.notes && a.statusCode === 'CANCELLED'">
+          Reason: {{ a.notes }}
+        </p>
+      </div>
+
+      <!-- Actions -->
+      <div class="appt-actions">
+
+        <!-- Doctor actions -->
+        <ng-container *ngIf="auth.isDoctor()">
+          <button class="act-btn act-confirm"
+                  *ngIf="a.statusCode === 'PENDING' || a.statusCode === 'RESCHEDULED'"
+                  (click)="confirm(a)">
+            ✅ Confirm
+          </button>
+          <button class="act-btn act-complete"
+                  *ngIf="a.statusCode === 'CONFIRMED'"
+                  (click)="complete(a)">
+            ✔️ Complete
+          </button>
+          <button class="act-btn act-noshow"
+                  *ngIf="a.statusCode === 'CONFIRMED'"
+                  (click)="noShow(a)">
+            🚫 No-show
+          </button>
+        </ng-container>
+
+        <!-- Patient actions -->
+        <ng-container *ngIf="auth.isPatient()">
+          <button class="act-btn act-reschedule"
+                  *ngIf="a.canBeRescheduled"
+                  (click)="reschedule(a)">
+            🔄 Reschedule
+          </button>
+          <button class="act-btn act-cancel"
+                  *ngIf="a.canBeCancelled"
+                  (click)="cancel(a)">
+            ✕ Cancel
+          </button>
+        </ng-container>
+
+        <!-- Admin actions -->
+        <ng-container *ngIf="auth.isAdmin()">
+          <button class="act-btn act-confirm"
+                  *ngIf="a.statusCode === 'PENDING' || a.statusCode === 'RESCHEDULED'"
+                  (click)="confirm(a)">
+            ✅ Confirm
+          </button>
+          <button class="act-btn act-cancel"
+                  *ngIf="a.canBeCancelled"
+                  (click)="cancel(a)">
+            ✕ Cancel
+          </button>
+        </ng-container>
+
+        <button class="act-btn act-history" (click)="viewHistory(a)">
+          🕘 History
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination" *ngIf="!loading && totalPages > 1">
+    <button class="pg-btn" [disabled]="page === 1" (click)="goToPage(page - 1)">← Prev</button>
+    <button *ngFor="let p of pages" class="pg-btn"
+            [class.pg-active]="p === page" (click)="goToPage(p)">{{ p }}</button>
+    <button class="pg-btn" [disabled]="page === totalPages" (click)="goToPage(page + 1)">Next →</button>
+  </div>
+
+</div>
