@@ -1,0 +1,306 @@
+
+<div class="loader-wrap" *ngIf="loading">
+  <div class="spinner"></div>
+</div>
+
+
+<div class="detail-page" *ngIf="!loading && doctor">
+
+  
+  <div class="hero-card">
+
+    <button class="btn-back" (click)="goBack()">
+      ← Back
+    </button>
+
+    <div class="hero-inner">
+      <div class="hero-avatar">
+        {{ doctor.fullName.split(' ')[1]?.[0] ?? 'D' }}
+      </div>
+
+      <div class="hero-info">
+        <h1 class="hero-name">{{ doctor.fullName }}</h1>
+        <span class="spec-chip">{{ doctor.specializationName }}</span>
+        <p class="hero-qual">{{ doctor.qualification }}</p>
+
+        <div class="hero-stats">
+          <div class="stat">
+            <span class="stat-val">{{ doctor.experienceYears }}</span>
+            <span class="stat-lbl">Years exp.</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat">
+            <span class="stat-val">₹{{ doctor.consultationFee | number }}</span>
+            <span class="stat-lbl">Consultation</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat">
+            <span class="stat-val avail-val"
+                  [class.avail-yes]="doctor.isAvailableToday">
+              {{ doctor.isAvailableToday ? 'Yes' : 'No' }}
+            </span>
+            <span class="stat-lbl">Available today</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hero CTA -->
+      <div class="hero-cta">
+        <button class="btn-book-hero"
+                *ngIf="auth.isPatient()"
+                (click)="setTab('slots')">
+          📅 Book Appointment
+        </button>
+        <button class="btn-delete-req"
+                *ngIf="isOwnProfile()"
+                (click)="requestDeletion()">
+          Request Deletion
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Tabs ───────────────────────────────────────────────────────────────── -->
+  <div class="tabs-bar">
+    <button class="tab"
+            [class.active]="activeTab === 'profile'"
+            (click)="setTab('profile')">
+      👤 Profile
+    </button>
+    <button class="tab"
+            [class.active]="activeTab === 'schedule'"
+            (click)="setTab('schedule')">
+      🗓️ Schedule
+    </button>
+    <button class="tab"
+            [class.active]="activeTab === 'slots'"
+            (click)="setTab('slots')">
+      ⏰ Book Slot
+    </button>
+    <button class="tab"
+            *ngIf="auth.isAdmin()"
+            [class.active]="activeTab === 'admin'"
+            (click)="setTab('admin')">
+      🛡️ Admin
+      <span class="req-badge" *ngIf="pendingRequests.length > 0">
+        {{ pendingRequests.length }}
+      </span>
+    </button>
+  </div>
+
+  <!-- ── Tab: Profile ───────────────────────────────────────────────────────── -->
+  <div class="tab-panel" *ngIf="activeTab === 'profile'">
+
+    <div class="info-section">
+      <h3 class="section-title">About</h3>
+      <p class="bio" *ngIf="doctor.bio">{{ doctor.bio }}</p>
+      <p class="bio muted" *ngIf="!doctor.bio">No bio provided.</p>
+    </div>
+
+    <div class="info-section">
+      <h3 class="section-title">Contact</h3>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="info-label">Email</span>
+          <span class="info-val">{{ doctor.email }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Phone</span>
+          <span class="info-val">{{ doctor.phoneNumber }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">License No.</span>
+          <span class="info-val mono">{{ doctor.licenseNumber }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Specialization</span>
+          <span class="info-val">{{ doctor.specializationName }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Qualification</span>
+          <span class="info-val">{{ doctor.qualification }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Experience</span>
+          <span class="info-val">{{ doctor.experienceYears }} years</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Tab: Schedule ─────────────────────────────────────────────────────── -->
+  <div class="tab-panel" *ngIf="activeTab === 'schedule'">
+
+    <h3 class="section-title">Weekly Availability</h3>
+
+    <div class="empty-sched"
+         *ngIf="!doctor.availabilities || doctor.availabilities.length === 0">
+      <p>No schedule set yet.</p>
+    </div>
+
+    <div class="schedule-grid"
+         *ngIf="doctor.availabilities && doctor.availabilities.length > 0">
+      <div class="sched-row"
+           *ngFor="let a of orderedAvailabilities"
+           [class.sched-off]="!a.isAvailable">
+        <div class="sched-day">{{ dayLabel(a.dayOfWeek) }}</div>
+        <div class="sched-time" *ngIf="a.isAvailable">
+          {{ a.startTime }} – {{ a.endTime }}
+          <span class="sched-slot">{{ a.slotDurationMinutes }} min slots</span>
+        </div>
+        <div class="sched-time muted" *ngIf="!a.isAvailable">
+          Not available
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Tab: Book Slot ─────────────────────────────────────────────────────── -->
+  <div class="tab-panel" *ngIf="activeTab === 'slots'">
+
+    <h3 class="section-title">Pick a Date & Time</h3>
+
+    <!-- Date picker -->
+    <div class="date-row">
+      <label class="date-label">Select date</label>
+      <input type="date"
+             class="date-input"
+             [(ngModel)]="selectedDate"
+             [min]="minDate"
+             (change)="onDateChange()">
+      <span class="day-name" *ngIf="selectedDate">{{ dayName }}</span>
+    </div>
+
+    <!-- Slot loading -->
+    <div class="slots-loader" *ngIf="loadingSlots">
+      <div class="spinner sm"></div>
+      <span>Loading slots...</span>
+    </div>
+
+    <!-- No availability for that day -->
+    <div class="no-slots"
+         *ngIf="!loadingSlots && slots && slots.availableSlots.length === 0 &&
+                slots.bookedSlots.length === 0">
+      <p>🚫 {{ doctor.fullName }} is not working on {{ dayName }}.</p>
+    </div>
+
+    <!-- Slot grid -->
+    <div class="slot-section"
+         *ngIf="!loadingSlots && slots &&
+                (slots.availableSlots.length > 0 || slots.bookedSlots.length > 0)">
+
+      <div class="slot-legend">
+        <span class="legend-item">
+          <span class="legend-dot free"></span> Available
+        </span>
+        <span class="legend-item">
+          <span class="legend-dot booked"></span> Booked
+        </span>
+        <span class="legend-item">
+          <span class="legend-dot selected"></span> Selected
+        </span>
+      </div>
+
+      <div class="slot-grid">
+
+        <!-- Available slots -->
+        <button *ngFor="let slot of slots.availableSlots"
+                class="slot-btn free"
+                [class.selected]="selectedSlot === slot"
+                (click)="selectSlot(slot)">
+          {{ slot }}
+        </button>
+
+        <!-- Booked slots -->
+        <button *ngFor="let slot of slots.bookedSlots"
+                class="slot-btn booked"
+                disabled>
+          {{ slot }}
+        </button>
+
+      </div>
+
+      <!-- Selected slot summary -->
+      <div class="slot-summary" *ngIf="selectedSlot">
+        <div class="summary-row">
+          <span>Doctor</span>
+          <strong>{{ doctor.fullName }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Date</span>
+          <strong>{{ selectedDate | date:'dd MMM yyyy' }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Time</span>
+          <strong>{{ selectedSlot }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Fee</span>
+          <strong>₹{{ doctor.consultationFee | number }}</strong>
+        </div>
+      </div>
+
+      <!-- Book button -->
+      <button class="btn-book-final"
+              *ngIf="auth.isPatient()"
+              [disabled]="!selectedSlot"
+              (click)="bookAppointment()">
+        {{ selectedSlot ? 'Confirm Booking →' : 'Select a time slot' }}
+      </button>
+
+      <p class="non-patient-note" *ngIf="!auth.isPatient()">
+        Only patients can book appointments.
+      </p>
+
+    </div>
+
+  </div>
+
+  <!-- ── Tab: Admin ─────────────────────────────────────────────────────────── -->
+  <div class="tab-panel" *ngIf="activeTab === 'admin' && auth.isAdmin()">
+
+    <h3 class="section-title">Pending Deletion Requests</h3>
+
+    <div class="empty-admin" *ngIf="pendingRequests.length === 0">
+      <p>✅ No pending deletion requests for this doctor.</p>
+    </div>
+
+    <div class="req-card" *ngFor="let req of pendingRequests">
+      <div class="req-header">
+        <span class="req-status pending">⏳ Pending</span>
+        <span class="req-date">{{ req.createdAt | date:'dd MMM yyyy HH:mm' }}</span>
+      </div>
+      <div class="req-body">
+        <p class="req-label">Requested by</p>
+        <p class="req-val">{{ req.requestedByName }}</p>
+        <p class="req-label">Reason</p>
+        <p class="req-val">{{ req.reason }}</p>
+      </div>
+      <div class="req-actions">
+        <button class="btn-approve" (click)="reviewRequest(req.id, true)">
+          ✅ Approve
+        </button>
+        <button class="btn-reject" (click)="reviewRequest(req.id, false)">
+          ❌ Reject
+        </button>
+      </div>
+    </div>
+
+    <!-- Direct soft delete -->
+    <div class="admin-direct">
+      <h3 class="section-title" style="margin-top:24px">Direct Actions</h3>
+      <button class="btn-direct-delete"
+              (click)="reviewRequest(-1, true)">
+        🗑️ Hard Delete Doctor Profile
+      </button>
+      <p class="delete-warn">
+        This permanently soft-deletes the doctor. All appointments are preserved.
+      </p>
+    </div>
+
+  </div>
+
+</div>

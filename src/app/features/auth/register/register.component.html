@@ -1,0 +1,70 @@
+<div class="reg-wrap">
+  <div class="reg-card">
+    <div class="reg-header">
+      <div class="logo"></div>
+      <h1>Create Account</h1>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <div class="row-2">
+        <div class="field">
+          <label>First name</label>
+          <input type="text" formControlName="firstName" placeholder="John"
+                 [class.invalid]="f('firstName')?.invalid && f('firstName')?.touched">
+          <span class="err" *ngIf="f('firstName')?.errors?.['required'] && f('firstName')?.touched">
+            Required.
+          </span>
+        </div>
+        <div class="field">
+          <label>Last name</label>
+          <input type="text" formControlName="lastName" placeholder="Doe"
+                 [class.invalid]="f('lastName')?.invalid && f('lastName')?.touched">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Email</label>
+        <input type="email" formControlName="email" placeholder="john@hospital.com"
+               [class.invalid]="f('email')?.invalid && f('email')?.touched">
+        <span class="err" *ngIf="f('email')?.errors?.['email'] && f('email')?.touched">
+          Enter a valid email.
+        </span>
+      </div>
+
+      <div class="field">
+        <label>Password</label>
+        <input type="password" formControlName="password" placeholder="Min 8 chars, 1 uppercase, 1 number, 1 special"
+               [class.invalid]="f('password')?.invalid && f('password')?.touched">
+        <span class="err" *ngIf="f('password')?.errors?.['pattern'] && f('password')?.touched">
+          Must include uppercase, number and special character.
+        </span>
+      </div>
+
+      <div class="field">
+        <label>Phone number</label>
+        <input type="text" formControlName="phoneNumber" placeholder="9876543210"
+               [class.invalid]="f('phoneNumber')?.invalid && f('phoneNumber')?.touched">
+      </div>
+
+      <div class="field">
+        <label>Role</label>
+        <select formControlName="userRoleId"
+                [class.invalid]="f('userRoleId')?.invalid && f('userRoleId')?.touched">
+          <option value="" disabled selected>Select role</option>
+          <option *ngFor="let r of roles" [value]="r.id">{{ r.name }}</option>
+        </select>
+        <span class="err" *ngIf="f('userRoleId')?.errors?.['required'] && f('userRoleId')?.touched">
+          Role is required.
+        </span>
+      </div>
+
+      <button type="submit" class="btn-submit" [disabled]="loading">
+        {{ loading ? 'Creating account...' : 'Create Account' }}
+      </button>
+    </form>
+
+    <p class="login-link">
+      Already have an account? <a routerLink="/auth/login">Sign in</a>
+    </p>
+  </div>
+</div>

@@ -1,0 +1,78 @@
+<div class="dash">
+
+  <div class="dash-top">
+    <div>
+      <h2>Welcome, {{ auth.currentUser()?.firstName }}!</h2>
+      <p class="role-sub">{{ auth.getUserRole() }} Dashboard</p>
+    </div>
+    <div class="live-chip" *ngIf="auth.isDoctor()">
+      <span class="dot" [class.active]="signalr.isConnected"></span>
+      {{ signalr.isConnected ? 'Live' : 'Offline' }}
+    </div>
+  </div>
+
+  <!-- DOCTOR VIEW -->
+  <ng-container *ngIf="auth.isDoctor()">
+    <div class="section">
+      <h3>Today's Appointments <span class="count">{{ todayList.length }}</span></h3>
+      <p class="empty" *ngIf="!todayList.length">No appointments today.</p>
+      <div class="card-grid">
+        <div class="appt-card" *ngFor="let a of todayList">
+          <div class="appt-time">{{ a.appointmentTime }}</div>
+          <div class="appt-body">
+            <p class="appt-name">{{ a.patientName }}</p>
+            <p class="appt-reason" *ngIf="a.reasonForVisit">{{ a.reasonForVisit }}</p>
+            <span class="badge" [ngClass]="statusClass(a.statusCode)">{{ a.statusName }}</span>
+          </div>
+          <div class="appt-actions">
+            <button class="btn-confirm" *ngIf="a.statusCode === 'PENDING'"
+                    (click)="confirm(a.id)">Confirm</button>
+            <button class="btn-complete" *ngIf="a.statusCode === 'CONFIRMED'"
+                    (click)="complete(a.id)">Complete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Upcoming</h3>
+      <p class="empty" *ngIf="!upcomingList.length">No upcoming appointments.</p>
+      <div class="card-grid">
+        <div class="appt-card" *ngFor="let a of upcomingList">
+          <div class="appt-time">
+            {{ a.appointmentDate | date:'dd MMM' }}<br>
+            <small>{{ a.appointmentTime }}</small>
+          </div>
+          <div class="appt-body">
+            <p class="appt-name">{{ a.patientName }}</p>
+            <span class="badge" [ngClass]="statusClass(a.statusCode)">{{ a.statusName }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- PATIENT VIEW -->
+  <ng-container *ngIf="auth.isPatient()">
+    <div class="section">
+      <h3>My Appointments</h3>
+      <p class="empty" *ngIf="!myList.length">
+        No appointments yet. <a routerLink="/doctors">Book one →</a>
+      </p>
+      <div class="card-grid">
+        <div class="appt-card" *ngFor="let a of myList">
+          <div class="appt-time">
+            {{ a.appointmentDate | date:'dd MMM' }}<br>
+            <small>{{ a.appointmentTime }}</small>
+          </div>
+          <div class="appt-body">
+            <p class="appt-name">{{ a.doctorName }}</p>
+            <p class="appt-reason">{{ a.doctorSpecialization }}</p>
+            <span class="badge" [ngClass]="statusClass(a.statusCode)">{{ a.statusName }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+</div>

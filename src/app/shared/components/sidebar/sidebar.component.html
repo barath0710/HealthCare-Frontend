@@ -1,0 +1,34 @@
+<aside class="sidebar">
+  <div class="brand">
+    <span>🏥</span>
+    <span class="brand-name">HealthCare</span>
+  </div>
+
+  <div class="user-card" *ngIf="user">
+    <div class="avatar">{{ user.firstName[0] }}{{ user.lastName[0] }}</div>
+    <div>
+      <p class="uname">{{ user.fullName }}</p>
+      <p class="urole">{{ user.role }}</p>
+    </div>
+  </div>
+
+  <div class="live-bar" *ngIf="auth.isDoctor()">
+    <span class="dot" [class.on]="signalr.isConnected"></span>
+    <span class="live-txt">{{ signalr.isConnected ? 'Live' : 'Connecting...' }}</span>
+    <span class="nbadge" *ngIf="notifCount > 0" (click)="clearNotif()">
+      {{ notifCount }}
+    </span>
+  </div>
+
+  <nav>
+    <a *ngFor="let item of visibleItems"
+       [routerLink]="item.route"
+       routerLinkActive="active"
+       class="nav-item">
+      <span class="nav-icon">{{ item.icon }}</span>
+      <span>{{ item.label }}</span>
+    </a>
+  </nav>
+
+  <button class="logout-btn" (click)="logout()">🚪 Logout</button>
+</aside>
