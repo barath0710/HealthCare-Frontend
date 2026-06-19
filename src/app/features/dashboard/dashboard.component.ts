@@ -16,9 +16,14 @@ import Swal from 'sweetalert2';
   styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit, OnDestroy {
-  todayList: Appointment[]    = [];
+  todayList: Appointment[] = [];
   upcomingList: Appointment[] = [];
-  myList: Appointment[]       = [];
+  myUpcoming: Appointment[] = [];
+
+  upcomingCount  = 0;
+  attendedCount  = 0;
+  cancelledCount = 0;
+
   loading = true;
   private sub = new Subscription();
 
@@ -41,7 +46,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.loadUpcoming();
     }
     if (this.auth.isPatient()) {
-      this.loadMy();
+      this.LoadMyUpcomingAndCounts();
     }
     this.loading = false;
   }
@@ -58,9 +63,32 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  loadMy(): void {
-    this.apptSvc.getMy().subscribe({
-      next: r => { this.myList = r.data?.items ?? []; }
+  // loadMy(): void {
+  //   this.apptSvc.getMy().subscribe({
+  //     next: r => { this.myList = r.data?.items ?? []; }
+  //   });
+  // }
+  
+  LoadMyUpcomingAndCounts() : void {
+    this.apptSvc.getMy(1,200).subscribe({
+      next : r =>{
+        const all : Appointment[] = r.data?.items ?? [];
+
+        const today = new Date();
+        today.setHours(0,0,0,0);
+
+        this.myUpcoming = all.filter(a =>{
+          const apptDate = new Date(a.appointmentDate);
+          apptDate.setHours(0,0,0,0);
+
+          return apptDate >= today && !['CANCELLED','COMPLETED','NOSHOW'].includes(a.statusCode);
+        }).sort((a,b) =>
+        new Date(a.appointmentDate).getTime() - new Date(a.appointmentDate).getTime() );
+
+        this.upcomingCount = this.myUpcoming.length;
+        this.attendedCount = all.filter(a => a.statusCode === 'COMPLETED').length;
+        this.cancelledCount = all.filter(a => a.statusCode === 'CANCELLED' || a.statusCode ==='NOSHOW').length;
+      }
     });
   }
 
@@ -78,7 +106,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
     if (this.auth.isPatient()) {
       this.sub.add(this.signalr.statusChanged$.subscribe(n => {
-        this.loadMy();
+        this.LoadMyUpcomingAndCounts();
         Swal.fire({ toast:true, position:'top-end', icon:'success',
           title:`Appointment ${n.statusName}`, text:n.message,
           showConfirmButton:false, timer:5000 });

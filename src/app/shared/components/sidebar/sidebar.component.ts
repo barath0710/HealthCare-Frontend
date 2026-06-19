@@ -4,6 +4,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { SignalrService } from '../../../core/services/signalr.service';
+import { ModalService } from '../../../core/services/modal.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -25,7 +26,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   constructor(
     public auth: AuthService,
-    public signalr: SignalrService
+    public signalr: SignalrService,
+    public modal: ModalService
   ) {}
 
   ngOnInit(): void {
@@ -47,6 +49,14 @@ export class SidebarComponent implements OnInit, OnDestroy {
   get user() { return this.auth.currentUser(); }
 
   clearNotif() { this.notifCount = 0; }
+
+  openSchedule(): void {
+    this.modal.open('schedule');
+  }
+
+  openBookSlot(): void {
+    this.modal.open('booking');
+  }
 
   logout() { this.auth.logout(); }
 }

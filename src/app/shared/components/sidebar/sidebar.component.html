@@ -28,6 +28,18 @@
       <span class="nav-icon">{{ item.icon }}</span>
       <span>{{ item.label }}</span>
     </a>
+
+    <div class="quick-actions" *ngIf="auth.isPatient()">
+      <p class="qa-label">Quick actions</p>
+      <button class="qa-btn" (click)="openSchedule()">
+        <span class="nav-icon">🗓️</span>
+        <span>Schedule</span>
+      </button>
+      <button class="qa-btn" (click)="openBookSlot()">
+        <span class="nav-icon">⏰</span>
+        <span>Book Slot</span>
+      </button>
+    </div>
   </nav>
 
   <button class="logout-btn" (click)="logout()">🚪 Logout</button>

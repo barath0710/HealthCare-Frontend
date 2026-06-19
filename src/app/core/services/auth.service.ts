@@ -19,11 +19,14 @@ export class AuthService {
       .pipe(tap(res => { if (res.success) this.storeSession(res.data); }));
   }
 
+  // register(request: RegisterRequest): Observable<ApiResponse<AuthResponse>> {
+  //   return this.http.post<ApiResponse<AuthResponse>>(`${this.apiUrl}/register`, request)
+  //     .pipe(tap(res => { if (res.success) this.storeSession(res.data); }));
+  // }
   register(request: RegisterRequest): Observable<ApiResponse<AuthResponse>> {
-    return this.http.post<ApiResponse<AuthResponse>>(`${this.apiUrl}/register`, request)
-      .pipe(tap(res => { if (res.success) this.storeSession(res.data); }));
+    return this.http.post<ApiResponse<AuthResponse>>(`${this.apiUrl}/register`, request);
   }
-
+  
   logout(): void {
     this.http.post(`${this.apiUrl}/logout`, {}).subscribe();
     this.clearSession();

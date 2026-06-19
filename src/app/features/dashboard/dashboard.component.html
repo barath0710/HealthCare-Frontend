@@ -11,6 +11,21 @@
     </div>
   </div>
 
+  <div class ="count-row" *ngIf = "auth.isPatient()">
+    <div class=" count-card count-upcoming">
+      <span class="count-num">{{ upcomingCount }}</span>
+      <span class ="count-label" >Upcoming</span>
+    </div>
+    <div class="count-card count-attended">
+      <span class="count-num">{{ attendedCount }}</span>
+      <span class="count-label">Attended</span>
+    </div>
+    <div class="count-card count-cancelled">
+      <span class="count-num">{{ cancelledCount }}</span>
+      <span class="count-label">Cancelled / No-show</span>
+    </div>
+
+  </div>
   <!-- DOCTOR VIEW -->
   <ng-container *ngIf="auth.isDoctor()">
     <div class="section">
@@ -55,12 +70,12 @@
   <!-- PATIENT VIEW -->
   <ng-container *ngIf="auth.isPatient()">
     <div class="section">
-      <h3>My Appointments</h3>
-      <p class="empty" *ngIf="!myList.length">
-        No appointments yet. <a routerLink="/doctors">Book one →</a>
+      <h3>Upcoming Appointments</h3>
+      <p class="empty" *ngIf="!myUpcoming.length">
+        No upcoming appointments. <a routerLink="/doctors">Book one →</a>
       </p>
       <div class="card-grid">
-        <div class="appt-card" *ngFor="let a of myList">
+        <div class="appt-card" *ngFor="let a of myUpcoming">
           <div class="appt-time">
             {{ a.appointmentDate | date:'dd MMM' }}<br>
             <small>{{ a.appointmentTime }}</small>

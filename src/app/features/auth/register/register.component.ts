@@ -44,10 +44,13 @@ export class RegisterComponent implements OnInit {
     this.loading = true;
     this.auth.register({ ...this.form.value, userRoleId: +this.form.value.userRoleId }).subscribe({
       next: res => {
-        Swal.fire({ icon:'success', title:'Registered!', text:`Welcome, ${res.data.user.firstName}`,
-          timer:1500, showConfirmButton:false });
-        this.router.navigate(['/dashboard']);
-      },
+         this.loading = false;
+        Swal.fire({ icon:'success', title:'Account Created!', text:'Please Login...',
+          confirmButtonText:'Go to Login'
+      }).then(() =>{
+      this.router.navigate(['/auth/login'])
+  });
+},
       error: () => { this.loading = false; }
     });
   }

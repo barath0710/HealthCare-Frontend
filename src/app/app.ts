@@ -4,11 +4,12 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from './core/services/auth.service';
 import { SidebarComponent } from './shared/components/sidebar/sidebar.component';
 import { NavbarComponent } from './shared/components/navbar/navbar.component';
+import { AppModalComponent } from './shared/components/app-modal/app-modal';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, CommonModule, SidebarComponent, NavbarComponent],
+  imports: [RouterOutlet, CommonModule, SidebarComponent, NavbarComponent,AppModalComponent],
   template: `
     <div class="app-shell">
       <app-sidebar *ngIf="auth.isLoggedIn()"></app-sidebar>

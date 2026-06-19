@@ -1,0 +1,173 @@
+<!-- Backdrop + modal — only renders when a modal is open -->
+<div class="modal-backdrop" *ngIf="isOpen" (click)="close()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h3>{{ type === 'schedule' ? '🗓️ Doctor Schedules' : '⏰ Book an Appointment' }}</h3>
+      <button class="modal-close" (click)="close()">✕</button>
+    </div>
+
+    <div class="modal-body">
+
+      <!-- ══════════════════════════════════════════════════════════════ -->
+      <!-- SCHEDULE MODAL -->
+      <!-- ══════════════════════════════════════════════════════════════ -->
+      <ng-container *ngIf="type === 'schedule'">
+
+        <!-- Doctor pick list -->
+        <ng-container *ngIf="!scheduleDoctor">
+          <div class="filters-bar">
+            <input type="text" [(ngModel)]="search" (ngModelChange)="onSearch()"
+                   placeholder="Search doctors..." class="search-input">
+            <select [(ngModel)]="specializationId" (ngModelChange)="loadDoctors()" class="spec-select">
+              <option [ngValue]="undefined">All specializations</option>
+              <option *ngFor="let s of specializations" [ngValue]="s.id">{{ s.name }}</option>
+            </select>
+          </div>
+
+          <div class="loader-wrap" *ngIf="loadingDoctors"><div class="spinner"></div></div>
+
+          <div class="pick-list" *ngIf="!loadingDoctors">
+            <div class="pick-card" *ngFor="let doc of doctors" (click)="viewSchedule(doc)">
+              <div class="pick-avatar">{{ doc.fullName.split(' ')[1]?.[0] ?? 'D' }}</div>
+              <div class="pick-info">
+                <p class="pick-name">{{ doc.fullName }}</p>
+                <span class="pick-spec">{{ doc.specializationName }}</span>
+              </div>
+              <span class="pick-arrow">→</span>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- Schedule detail -->
+        <ng-container *ngIf="scheduleDoctor">
+          <button class="back-link" (click)="backToScheduleList()">← Back to list</button>
+          <div class="sched-doctor-head">
+            <div class="pick-avatar">{{ scheduleDoctor.fullName.split(' ')[1]?.[0] ?? 'D' }}</div>
+            <div>
+              <p class="pick-name">{{ scheduleDoctor.fullName }}</p>
+              <span class="pick-spec">{{ scheduleDoctor.specializationName }}</span>
+            </div>
+          </div>
+
+          <div class="empty-sched" *ngIf="!scheduleDoctor.availabilities?.length">
+            No schedule set for this doctor yet.
+          </div>
+
+          <div class="schedule-grid" *ngIf="scheduleDoctor.availabilities?.length">
+            <div class="sched-row" *ngFor="let a of orderedAvailabilities"
+                 [class.sched-off]="!a.isAvailable">
+              <div class="sched-day">{{ dayLabel(a.dayOfWeek) }}</div>
+              <div class="sched-time" *ngIf="a.isAvailable">
+                {{ a.startTime }} – {{ a.endTime }}
+                <span class="sched-slot">{{ a.slotDurationMinutes }} min</span>
+              </div>
+              <div class="sched-time muted" *ngIf="!a.isAvailable">Not available</div>
+            </div>
+          </div>
+        </ng-container>
+
+      </ng-container>
+
+      <!-- ══════════════════════════════════════════════════════════════ -->
+      <!-- BOOKING MODAL -->
+      <!-- ══════════════════════════════════════════════════════════════ -->
+      <ng-container *ngIf="type === 'booking'">
+
+        <!-- Step 1: pick doctor -->
+        <ng-container *ngIf="bookStep === 'pick'">
+          <div class="filters-bar">
+            <input type="text" [(ngModel)]="search" (ngModelChange)="onSearch()"
+                   placeholder="Search doctors..." class="search-input">
+            <select [(ngModel)]="specializationId" (ngModelChange)="loadDoctors()" class="spec-select">
+              <option [ngValue]="undefined">All specializations</option>
+              <option *ngFor="let s of specializations" [ngValue]="s.id">{{ s.name }}</option>
+            </select>
+          </div>
+
+          <div class="loader-wrap" *ngIf="loadingDoctors"><div class="spinner"></div></div>
+
+          <div class="pick-list" *ngIf="!loadingDoctors">
+            <div class="pick-card" *ngFor="let doc of doctors" (click)="pickDoctorToBook(doc)">
+              <div class="pick-avatar">{{ doc.fullName.split(' ')[1]?.[0] ?? 'D' }}</div>
+              <div class="pick-info">
+                <p class="pick-name">{{ doc.fullName }}</p>
+                <span class="pick-spec">{{ doc.specializationName }}</span>
+                <p class="pick-meta">{{ doc.experienceYears }} yrs · ₹{{ doc.consultationFee }}</p>
+              </div>
+              <span class="pick-avail" [class.yes]="doc.isAvailableToday">
+                {{ doc.isAvailableToday ? '● Today' : '○' }}
+              </span>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- Step 2: pick date and slot -->
+        <ng-container *ngIf="bookStep === 'slot' && bookDoctor">
+          <button class="back-link" (click)="backToDoctorPick()">← Change doctor</button>
+
+          <div class="sched-doctor-head">
+            <div class="pick-avatar">{{ bookDoctor.fullName.split(' ')[1]?.[0] ?? 'D' }}</div>
+            <div>
+              <p class="pick-name">{{ bookDoctor.fullName }}</p>
+              <span class="pick-spec">{{ bookDoctor.specializationName }}</span>
+            </div>
+          </div>
+
+          <div class="date-row">
+            <label>Date</label>
+            <input type="date" [(ngModel)]="selectedDate" [min]="minDate" (change)="onDateChange()">
+            <span class="day-name" *ngIf="selectedDate">{{ dayName }}</span>
+          </div>
+
+          <div class="loader-wrap sm" *ngIf="loadingSlots"><div class="spinner sm"></div></div>
+
+          <div class="no-slots" *ngIf="!loadingSlots && slots &&
+                slots.availableSlots.length === 0 && slots.bookedSlots.length === 0">
+            🚫 Not available on {{ dayName }}.
+          </div>
+
+          <div class="slot-grid" *ngIf="!loadingSlots && slots && slots.availableSlots.length > 0">
+            <button *ngFor="let slot of slots.availableSlots"
+                    class="slot-btn" [class.selected]="selectedSlot === slot"
+                    (click)="selectSlot(slot)">{{ slot }}</button>
+            <button *ngFor="let slot of slots.bookedSlots" class="slot-btn booked" disabled>
+              {{ slot }}
+            </button>
+          </div>
+
+          <textarea class="reason-input" [(ngModel)]="reasonForVisit"
+                    maxlength="500" rows="3"
+                    placeholder="Reason for visit (optional)"></textarea>
+
+          <button class="btn-primary" [disabled]="!selectedSlot" (click)="goToConfirm()">
+            Continue →
+          </button>
+        </ng-container>
+
+        <!-- Step 3: confirm -->
+        <ng-container *ngIf="bookStep === 'confirm' && bookDoctor">
+          <button class="back-link" (click)="backToSlot()">← Back</button>
+
+          <div class="confirm-card">
+            <div class="confirm-row"><span>Doctor</span><strong>{{ bookDoctor.fullName }}</strong></div>
+            <div class="confirm-row"><span>Date</span><strong>{{ formatDate(selectedDate) }}</strong></div>
+            <div class="confirm-row"><span>Time</span><strong>{{ selectedSlot }}</strong></div>
+            <div class="confirm-row" *ngIf="reasonForVisit">
+              <span>Reason</span><strong>{{ reasonForVisit }}</strong>
+            </div>
+            <div class="confirm-row total">
+              <span>Fee</span><strong>₹{{ bookDoctor.consultationFee | number }}</strong>
+            </div>
+          </div>
+
+          <button class="btn-primary" [disabled]="submitting" (click)="confirmBooking()">
+            {{ submitting ? 'Booking...' : '✅ Confirm booking' }}
+          </button>
+        </ng-container>
+
+      </ng-container>
+
+    </div>
+  </div>
+</div>

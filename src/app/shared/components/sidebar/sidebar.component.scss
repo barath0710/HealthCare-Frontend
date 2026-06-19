@@ -42,6 +42,26 @@ nav { flex: 1; padding: 12px 0; }
   &.active { background: rgba(102,126,234,.2); color: #fff;
               border-right: 3px solid #667eea; }
 }
+
+.quick-actions {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+.qa-label {
+  font-size: 10px; text-transform: uppercase; letter-spacing: .06em;
+  color: #6b7280; padding: 0 20px; margin-bottom: 8px;
+}
+.qa-btn {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; padding: 10px 20px;
+  background: none; border: none; color: #9ca3af;
+  text-align: left; font-size: 14px; cursor: pointer;
+  transition: all .15s;
+  .nav-icon { font-size: 16px; width: 22px; text-align: center; }
+  &:hover { background: rgba(102,126,234,.15); color: #fff; }
+}
+
 .logout-btn {
   width: 100%; padding: 14px 20px; background: none; border: none;
   border-top: 1px solid rgba(255,255,255,.08);
