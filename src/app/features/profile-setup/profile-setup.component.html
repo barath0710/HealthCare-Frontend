@@ -1,0 +1,104 @@
+<div class="setup-wrap">
+  <div class="setup-card">
+
+    <div class="setup-header">
+      <div class="setup-step">Step 1 of 1</div>
+      <h1>Complete your profile</h1>
+      <p>We need a few more details to set up your patient record.</p>
+    </div>
+
+    <!-- User info banner (read-only, pulled from token) -->
+    <div class="user-banner">
+      <div class="ub-avatar">{{ auth.currentUser()?.firstName?.[0] }}{{ auth.currentUser()?.lastName?.[0] }}</div>
+      <div>
+        <p class="ub-name">{{ auth.currentUser()?.fullName }}</p>
+        <p class="ub-email">{{ auth.currentUser()?.email }}</p>
+      </div>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+
+      <!-- Date of birth + age preview -->
+      <div class="field">
+        <label>Date of birth <span class="req">*</span></label>
+        <div class="dob-row">
+          <input type="date" formControlName="dateOfBirth"
+                 [max]="maxDate"
+                 [class.invalid]="f('dateOfBirth')?.invalid && f('dateOfBirth')?.touched">
+          <span class="age-preview" *ngIf="age > 0">{{ age }} years old</span>
+        </div>
+        <span class="err" *ngIf="f('dateOfBirth')?.errors?.['required'] && f('dateOfBirth')?.touched">
+          Date of birth is required.
+        </span>
+      </div>
+
+      <!-- Gender and Blood Group side by side -->
+      <div class="row-2">
+        <div class="field">
+          <label>Gender <span class="req">*</span></label>
+          <select formControlName="genderId"
+                  [class.invalid]="f('genderId')?.invalid && f('genderId')?.touched">
+            <option [ngValue]="null" disabled>Select gender</option>
+            <option *ngFor="let g of genders" [ngValue]="g.id">{{ g.name }}</option>
+          </select>
+          <span class="err" *ngIf="f('genderId')?.errors?.['required'] && f('genderId')?.touched">
+            Required.
+          </span>
+        </div>
+
+        <div class="field">
+          <label>Blood group <span class="req">*</span></label>
+          <select formControlName="bloodGroupId"
+                  [class.invalid]="f('bloodGroupId')?.invalid && f('bloodGroupId')?.touched">
+            <option [ngValue]="null" disabled>Select blood group</option>
+            <option *ngFor="let b of bloodGroups" [ngValue]="b.id">
+              {{ b.name }} ({{ b.code }})
+            </option>
+          </select>
+          <span class="err" *ngIf="f('bloodGroupId')?.errors?.['required'] && f('bloodGroupId')?.touched">
+            Required.
+          </span>
+        </div>
+      </div>
+
+      <!-- Address -->
+      <div class="field">
+        <label>Home address <span class="req">*</span></label>
+        <textarea formControlName="address" rows="2" maxlength="255"
+                  placeholder="Enter your current home address"
+                  [class.invalid]="f('address')?.invalid && f('address')?.touched">
+        </textarea>
+        <span class="err" *ngIf="f('address')?.errors?.['required'] && f('address')?.touched">
+          Address is required.
+        </span>
+      </div>
+
+      <!-- Emergency contact (optional section) -->
+      <div class="optional-section">
+        <p class="optional-label">Emergency contact <span class="opt">(optional)</span></p>
+        <div class="row-2">
+          <div class="field">
+            <label>Name</label>
+            <input type="text" formControlName="emergencyContactName"
+                   placeholder="Contact person name">
+          </div>
+          <div class="field">
+            <label>Phone</label>
+            <input type="text" formControlName="emergencyContactPhone"
+                   placeholder="Phone number">
+            <span class="err"
+                  *ngIf="f('emergencyContactPhone')?.errors?.['pattern'] && f('emergencyContactPhone')?.touched">
+              Invalid phone number.
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit" [disabled]="loading">
+        {{ loading ? 'Saving...' : 'Complete Profile →' }}
+      </button>
+
+    </form>
+
+  </div>
+</div>

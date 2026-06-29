@@ -144,3 +144,40 @@
   &:disabled { background: #e5e7eb; color: #9ca3af; cursor: not-allowed; }
   &:hover:not(:disabled) { opacity: .9; }
 }
+
+// Add these to the existing file
+.form-field {
+  margin-bottom: 14px;
+
+  label {
+    display: block; font-size: 13px; font-weight: 500;
+    color: #374151; margin-bottom: 5px;
+  }
+
+  input, select, textarea {
+    width: 100%; padding: 9px 12px;
+    border: 2px solid #e5e7eb; border-radius: 8px;
+    font-size: 13px; font-family: inherit;
+    box-sizing: border-box; transition: border-color .2s;
+    &:focus { outline: none; border-color: #667eea; }
+  }
+
+  textarea { resize: vertical; }
+}
+
+.form-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+}
+
+.req  { color: #ef4444; }
+.opt  { color: #9ca3af; font-weight: 400; font-size: 12px; }
+
+.field-err {
+  display: block; color: #ef4444;
+  font-size: 11px; margin-top: 3px;
+}
+
+.field-hint {
+  display: block; color: #9ca3af;
+  font-size: 11px; margin-top: 3px;
+}

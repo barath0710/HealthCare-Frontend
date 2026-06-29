@@ -59,6 +59,10 @@ export class DoctorService {
     return this.http.get<ApiResponse<any[]>>(`${this.apiUrl}/delete-requests/pending`);
   }
 
+  getAllDeleteRequests(): Observable<ApiResponse<any[]>>{
+    return this.http.get<ApiResponse<any[]>>(`${this.apiUrl}/delete-requests/all`)
+  }
+
   reviewDeleteRequest(requestId: number, approve: boolean, reviewNotes?: string):
     Observable<ApiResponse<any>> {
     return this.http.put<ApiResponse<any>>(

@@ -1,0 +1,421 @@
+<div class="admin-page">
+
+  <!-- Header -->
+  <div class="admin-header">
+    <div>
+      <h2 class="page-title">Admin Panel</h2>
+      <p class="page-sub">System overview and management</p>
+    </div>
+    <button class="btn-refresh" (click)="refreshAll()" title="Refresh">
+      🔄 Refresh
+    </button>
+  </div>
+
+  <!-- Tabs  -->
+  <div class="tabs-bar">
+    <button class="tab" [class.active]="activeTab === 'overview'"
+            (click)="setTab('overview')">
+      📊 Overview
+    </button>
+    <button class="tab" [class.active]="activeTab === 'appointments'"
+            (click)="setTab('appointments')">
+      📅 Appointments
+      <span class="tab-badge" *ngIf="stats?.pendingAppointments">
+        {{ stats?.pendingAppointments }}
+      </span>
+    </button>
+    <button class="tab" [class.active]="activeTab === 'deleteRequests'"
+            (click)="setTab('deleteRequests')">
+      🗑️ Delete Requests
+      <span class="tab-badge danger" *ngIf="stats?.pendingDeleteReqs">
+        {{ stats?.pendingDeleteReqs }}
+      </span>
+    </button>
+    <button class="tab" [class.active]="activeTab === 'lookups'"
+            (click)="setTab('lookups')">
+      📋 Lookups
+    </button>
+  </div>
+
+  
+  <!-- TAB: OVERVIEW -->
+
+  <div class="tab-content" *ngIf="activeTab === 'overview'">
+
+    <div class="stats-loader" *ngIf="statsLoading">
+      <div class="spinner"></div> Loading stats...
+    </div>
+
+    <div *ngIf="!statsLoading && stats">
+
+      <!-- Stat cards -->
+      <div class="stats-grid">
+
+        <div class="stat-card blue" routerLink="/doctors">
+          <div class="stat-icon">👨‍⚕️</div>
+          <div>
+            <p class="stat-num">{{ stats?.totalDoctors }}</p>
+            <p class="stat-lbl">Total Doctors</p>
+          </div>
+        </div>
+
+        <div class="stat-card purple" routerLink="/patients">
+          <div class="stat-icon">🧑</div>
+          <div>
+            <p class="stat-num">{{ stats?.totalPatients }}</p>
+            <p class="stat-lbl">Total Patients</p>
+          </div>
+        </div>
+
+        <div class="stat-card amber" (click)="setTab('appointments')">
+          <div class="stat-icon">📅</div>
+          <div>
+            <p class="stat-num">{{ stats?.totalAppointments }}</p>
+            <p class="stat-lbl">Total Appointments</p>
+          </div>
+        </div>
+
+        <div class="stat-card orange" (click)="setTab('appointments')">
+          <div class="stat-icon">⏳</div>
+          <div>
+            <p class="stat-num">{{ stats?.pendingAppointments }}</p>
+            <p class="stat-lbl">Pending Confirmation</p>
+          </div>
+        </div>
+
+        <div class="stat-card green">
+          <div class="stat-icon">✅</div>
+          <div>
+            <p class="stat-num">{{ stats?.confirmedToday }}</p>
+            <p class="stat-lbl">Confirmed</p>
+          </div>
+        </div>
+
+        <div class="stat-card teal">
+          <div class="stat-icon">✔️</div>
+          <div>
+            <p class="stat-num">{{ stats?.completedTotal }}</p>
+            <p class="stat-lbl">Completed</p>
+          </div>
+        </div>
+
+        <div class="stat-card red">
+          <div class="stat-icon">✕</div>
+          <div>
+            <p class="stat-num">{{ stats?.cancelledTotal }}</p>
+            <p class="stat-lbl">Cancelled</p>
+          </div>
+        </div>
+
+        <div class="stat-card warn" (click)="setTab('deleteRequests')">
+          <div class="stat-icon">🗑️</div>
+          <div>
+            <p class="stat-num">{{ stats?.pendingDeleteReqs }}</p>
+            <p class="stat-lbl">Delete Requests</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="quick-section">
+        <h3>Quick Actions</h3>
+        <div class="quick-grid">
+          <a class="quick-card" routerLink="/doctors">
+            <span class="qc-icon">👨‍⚕️</span>
+            <span>Manage Doctors</span>
+          </a>
+          <a class="quick-card" routerLink="/patients">
+            <span class="qc-icon">🧑</span>
+            <span>Manage Patients</span>
+          </a>
+          <a class="quick-card" routerLink="/auth/staff-register">
+            <span class="qc-icon">👤</span>
+            <span>Register Staff</span>
+          </a>
+          <a class="quick-card" routerLink="/appointments">
+            <span class="qc-icon">📅</span>
+            <span>All Appointments</span>
+          </a>
+          <div class="quick-card" (click)="setTab('deleteRequests')">
+            <span class="qc-icon">🗑️</span>
+            <span>Delete Requests</span>
+            <span class="qc-badge" *ngIf="stats.pendingDeleteReqs > 0">
+              {{ stats.pendingDeleteReqs }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- TAB: APPOINTMENTS -->
+   
+  <div class="tab-content" *ngIf="activeTab === 'appointments'">
+
+    <div class="section-header">
+      <h3>All Appointments
+        <span class="count-pill">{{ apptTotalCount }}</span>
+      </h3>
+      <select class="filter-select"
+              [(ngModel)]="apptStatusFilter"
+              (ngModelChange)="onApptFilterChange()">
+        <option value="">All Statuses</option>
+        <option *ngFor="let s of statuses" [value]="s.code">{{ s.name }}</option>
+      </select>
+    </div>
+
+    <div class="loader-wrap" *ngIf="apptLoading">
+      <div class="spinner"></div>
+    </div>
+
+    <div class="empty-state" *ngIf="!apptLoading && appointments.length === 0">
+      <p>No appointments match this filter.</p>
+    </div>
+
+    <div class="appt-table-wrap" *ngIf="!apptLoading && appointments.length > 0">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Doctor</th>
+            <th>Patient</th>
+            <th>Date & Time</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let a of appointments">
+            <td class="muted">{{ a.id }}</td>
+            <td>
+              <p class="name-primary">{{ a.doctorName }}</p>
+              <p class="name-sub">{{ a.doctorSpecialization }}</p>
+            </td>
+            <td>
+              <p class="name-primary">{{ a.patientName }}</p>
+            </td>
+            <td>
+              <p class="name-primary">{{ a.appointmentDate | date:'dd MMM yyyy' }}</p>
+              <p class="name-sub">{{ a.appointmentTime }}</p>
+            </td>
+            <td>
+              <span class="badge" [ngClass]="statusClass(a.statusCode)">
+                {{ a.statusName }}
+              </span>
+            </td>
+            <td>
+              <div class="row-actions">
+                <button class="act-sm act-confirm"
+                        *ngIf="a.statusCode === 'PENDING' || a.statusCode === 'RESCHEDULED'"
+                        (click)="confirmAppt(a.id)">
+                  Confirm
+                </button>
+                <button class="act-sm act-cancel"
+                        *ngIf="a.canBeCancelled"
+                        (click)="cancelAppt(a.id)">
+                  Cancel
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="apptTotalPages > 1">
+      <button class="pg-btn" [disabled]="apptPage === 1"
+              (click)="apptGoToPage(apptPage - 1)">← Prev</button>
+      <button *ngFor="let p of apptPages" class="pg-btn"
+              [class.pg-active]="p === apptPage"
+              (click)="apptGoToPage(p)">{{ p }}</button>
+      <button class="pg-btn" [disabled]="apptPage === apptTotalPages"
+              (click)="apptGoToPage(apptPage + 1)">Next →</button>
+    </div>
+
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <!-- TAB: DELETE REQUESTS -->
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <div class="tab-content" *ngIf="activeTab === 'deleteRequests'">
+
+    <div class="sub-tabs">
+      <button class="sub-tab" [class.active]="deleteTab === 'pending'"
+              (click)="deleteTab = 'pending'">
+        Pending
+        <span class="tab-badge danger" *ngIf="deleteRequests.length">
+          {{ deleteRequests.length }}
+        </span>
+      </button>
+      <button class="sub-tab" [class.active]="deleteTab === 'all'"
+              (click)="deleteTab = 'all'">
+        All Requests
+      </button>
+    </div>
+
+    <div class="loader-wrap" *ngIf="deleteLoading">
+      <div class="spinner"></div>
+    </div>
+
+    <!-- Pending requests -->
+    <ng-container *ngIf="deleteTab === 'pending' && !deleteLoading">
+      <div class="empty-state" *ngIf="deleteRequests.length === 0">
+        <div class="empty-icon">✅</div>
+        <p>No pending deletion requests.</p>
+      </div>
+
+      <div class="req-list">
+        <div class="req-card" *ngFor="let r of deleteRequests">
+          <div class="req-top">
+            <div class="req-doc">
+              <div class="req-avatar">{{ r.doctorName.split(' ')[1]?.[0] ?? 'D' }}</div>
+              <div>
+                <p class="req-name">{{ r.doctorName }}</p>
+                <span class="req-spec">{{ r.specializationName }}</span>
+              </div>
+            </div>
+            <span class="req-date">{{ r.createdAt | date:'dd MMM yyyy, HH:mm' }}</span>
+          </div>
+          <div class="req-body">
+            <p class="req-label">Requested by</p>
+            <p class="req-val">{{ r.requestedByName }}</p>
+            <p class="req-label">Reason</p>
+            <p class="req-val">{{ r.reason }}</p>
+          </div>
+          <div class="req-actions">
+            <button class="btn-approve" (click)="reviewRequest(r.id, true)">
+              ✅ Approve & Delete
+            </button>
+            <button class="btn-reject" (click)="reviewRequest(r.id, false)">
+              ❌ Reject
+            </button>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- All requests -->
+    <ng-container *ngIf="deleteTab === 'all' && !deleteLoading">
+      <div class="empty-state" *ngIf="allDeleteRequests.length === 0">
+        <p>No deletion requests found.</p>
+      </div>
+
+      <div class="data-table-wrap" *ngIf="allDeleteRequests.length > 0">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Doctor</th>
+              <th>Requested by</th>
+              <th>Reason</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Reviewed by</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of allDeleteRequests">
+              <td>
+                <p class="name-primary">{{ r.doctorName }}</p>
+                <p class="name-sub">{{ r.specializationName }}</p>
+              </td>
+              <td>{{ r.requestedByName }}</td>
+              <td class="reason-cell">{{ r.reason }}</td>
+              <td class="muted">{{ r.createdAt | date:'dd MMM yyyy' }}</td>
+              <td>
+                <span class="req-status-badge"
+                      [class.pending]="r.status === 'PENDING'"
+                      [class.approved]="r.status === 'APPROVED'"
+                      [class.rejected]="r.status === 'REJECTED'">
+                  {{ r.status }}
+                </span>
+              </td>
+              <td class="muted">{{ r.reviewedByName || '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <!-- TAB: LOOKUPS -->
+  <!-- ════════════════════════════════════════════════════════════════════════ -->
+  <div class="tab-content" *ngIf="activeTab === 'lookups'">
+
+    <div class="sub-tabs">
+      <button class="sub-tab" [class.active]="lookupTab === 'specializations'"
+              (click)="lookupTab = 'specializations'">Specializations</button>
+      <button class="sub-tab" [class.active]="lookupTab === 'statuses'"
+              (click)="lookupTab = 'statuses'">Appt Statuses</button>
+      <button class="sub-tab" [class.active]="lookupTab === 'genders'"
+              (click)="lookupTab = 'genders'">Genders</button>
+      <button class="sub-tab" [class.active]="lookupTab === 'bloodGroups'"
+              (click)="lookupTab = 'bloodGroups'">Blood Groups</button>
+    </div>
+
+    <div class="loader-wrap" *ngIf="lookupLoading">
+      <div class="spinner"></div>
+    </div>
+
+    <!-- Specializations -->
+    <div class="lookup-grid" *ngIf="lookupTab === 'specializations' && !lookupLoading">
+      <div class="lookup-card" *ngFor="let s of specializations">
+        <span class="lookup-code">{{ s.code }}</span>
+        <span class="lookup-name">{{ s.name }}</span>
+        <span class="lookup-active" [class.active]="s.isActive">
+          {{ s.isActive ? 'Active' : 'Inactive' }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Appointment Statuses -->
+    <div class="status-grid" *ngIf="lookupTab === 'statuses' && !lookupLoading">
+      <div class="status-card" *ngFor="let s of appointmentStatuses">
+        <div class="status-top">
+          <span class="status-name">{{ s.name }}</span>
+          <span class="badge" [ngClass]="statusClass(s.code)">{{ s.code }}</span>
+        </div>
+        <div class="status-flags">
+          <span class="flag" [class.flag-yes]="s.canBeCancelled">
+            {{ s.canBeCancelled ? '✓' : '✕' }} Cancellable
+          </span>
+          <span class="flag" [class.flag-yes]="s.canBeRescheduled">
+            {{ s.canBeRescheduled ? '✓' : '✕' }} Reschedulable
+          </span>
+          <span class="flag" [class.flag-no]="s.isTerminal">
+            {{ s.isTerminal ? '🔒 Terminal' : '↔ Transitional' }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Genders -->
+    <div class="lookup-grid" *ngIf="lookupTab === 'genders' && !lookupLoading">
+      <div class="lookup-card" *ngFor="let g of genders">
+        <span class="lookup-code">{{ g.code }}</span>
+        <span class="lookup-name">{{ g.name }}</span>
+        <span class="lookup-active" [class.active]="g.isActive">
+          {{ g.isActive ? 'Active' : 'Inactive' }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Blood Groups -->
+    <div class="lookup-grid" *ngIf="lookupTab === 'bloodGroups' && !lookupLoading">
+      <div class="lookup-card" *ngFor="let b of bloodGroups">
+        <span class="lookup-code blood">{{ b.code }}</span>
+        <span class="lookup-name">{{ b.name }}</span>
+        <span class="lookup-active" [class.active]="b.isActive">
+          {{ b.isActive ? 'Active' : 'Inactive' }}
+        </span>
+      </div>
+    </div>
+
+  </div>
+
+</div>

@@ -25,7 +25,7 @@
 
         <div class="hero-stats">
           <div class="stat">
-            <span class="stat-val">{{ doctor.experienceYears }}</span>
+            <span  class="stat-val">{{ doctor.experienceYears }}</span>
             <span class="stat-lbl">Years exp.</span>
           </div>
           <div class="stat-divider"></div>
@@ -51,6 +51,9 @@
                 (click)="setTab('slots')">
           📅 Book Appointment
         </button>
+        <!-- <button class = "btn-book-hero" 
+        *ngIf="auth.isPatient()" 
+        (click) = ""></button> -->
         <button class="btn-delete-req"
                 *ngIf="isOwnProfile()"
                 (click)="requestDeletion()">
@@ -68,7 +71,7 @@
             (click)="setTab('profile')">
       👤 Profile
     </button>
-    <button class="tab"
+    <!-- <button class="tab"
             [class.active]="activeTab === 'schedule'"
             (click)="setTab('schedule')">
       🗓️ Schedule
@@ -77,7 +80,7 @@
             [class.active]="activeTab === 'slots'"
             (click)="setTab('slots')">
       ⏰ Book Slot
-    </button>
+    </button> -->
     <button class="tab"
             *ngIf="auth.isAdmin()"
             [class.active]="activeTab === 'admin'"
@@ -131,7 +134,7 @@
   </div>
 
   <!-- ── Tab: Schedule ─────────────────────────────────────────────────────── -->
-  <div class="tab-panel" *ngIf="activeTab === 'schedule'">
+  <!-- <div class="tab-panel" *ngIf="activeTab === 'schedule'">
 
     <h3 class="section-title">Weekly Availability</h3>
 
@@ -156,7 +159,7 @@
       </div>
     </div>
 
-  </div>
+  </div> -->
 
   <!-- ── Tab: Book Slot ─────────────────────────────────────────────────────── -->
   <div class="tab-panel" *ngIf="activeTab === 'slots'">

@@ -1,10 +1,10 @@
 import { Injectable, signal } from '@angular/core';
 
-export type ModalType = 'booking' | 'schedule' | null;
+export type ModalType = 'booking' | 'schedule' | 'addDoctor' |'addPatient' | 'editPatient' | 'viewPatient' |null;
 
 @Injectable({ providedIn: 'root' })
 export class ModalService {
-  activeModal = signal<ModalType>(null);
+    activeModal = signal<ModalType>(null);
   modalData   = signal<any>(null);
 
   open(type: ModalType, data?: any): void {
@@ -16,4 +16,4 @@ export class ModalService {
     this.activeModal.set(null);
     this.modalData.set(null);
   }
-}
+} 

@@ -1,11 +1,14 @@
 <div class="reg-wrap">
   <div class="reg-card">
+
     <div class="reg-header">
-      <div class="logo"></div>
-      <h1>Create Account</h1>
+      <div class="logo">🏥</div>
+      <h1>Create Patient Account</h1>
+      <p>Register to book and manage your appointments</p>
     </div>
 
     <form [formGroup]="form" (ngSubmit)="submit()">
+
       <div class="row-2">
         <div class="field">
           <label>First name</label>
@@ -19,12 +22,15 @@
           <label>Last name</label>
           <input type="text" formControlName="lastName" placeholder="Doe"
                  [class.invalid]="f('lastName')?.invalid && f('lastName')?.touched">
+          <span class="err" *ngIf="f('lastName')?.errors?.['required'] && f('lastName')?.touched">
+            Required.
+          </span>
         </div>
       </div>
 
       <div class="field">
-        <label>Email</label>
-        <input type="email" formControlName="email" placeholder="john@hospital.com"
+        <label>Email address</label>
+        <input type="email" formControlName="email" placeholder="john@example.com"
                [class.invalid]="f('email')?.invalid && f('email')?.touched">
         <span class="err" *ngIf="f('email')?.errors?.['email'] && f('email')?.touched">
           Enter a valid email.
@@ -33,8 +39,17 @@
 
       <div class="field">
         <label>Password</label>
-        <input type="password" formControlName="password" placeholder="Min 8 chars, 1 uppercase, 1 number, 1 special"
-               [class.invalid]="f('password')?.invalid && f('password')?.touched">
+        <div class="pw-wrap">
+          <input [type]="showPw ? 'text' : 'password'"
+                 formControlName="password" placeholder="Min 8 chars"
+                 [class.invalid]="f('password')?.invalid && f('password')?.touched">
+          <button type="button" (click)="showPw = !showPw">
+            {{ showPw ? '🙈' : '👁️' }}
+          </button>
+        </div>
+        <span class="err" *ngIf="f('password')?.errors?.['minlength'] && f('password')?.touched">
+          Minimum 8 characters.
+        </span>
         <span class="err" *ngIf="f('password')?.errors?.['pattern'] && f('password')?.touched">
           Must include uppercase, number and special character.
         </span>
@@ -44,27 +59,22 @@
         <label>Phone number</label>
         <input type="text" formControlName="phoneNumber" placeholder="9876543210"
                [class.invalid]="f('phoneNumber')?.invalid && f('phoneNumber')?.touched">
-      </div>
-
-      <div class="field">
-        <label>Role</label>
-        <select formControlName="userRoleId"
-                [class.invalid]="f('userRoleId')?.invalid && f('userRoleId')?.touched">
-          <option value="" disabled selected>Select role</option>
-          <option *ngFor="let r of roles" [value]="r.id">{{ r.name }}</option>
-        </select>
-        <span class="err" *ngIf="f('userRoleId')?.errors?.['required'] && f('userRoleId')?.touched">
-          Role is required.
+        <span class="err" *ngIf="f('phoneNumber')?.errors?.['pattern'] && f('phoneNumber')?.touched">
+          Enter a valid phone number.
         </span>
       </div>
 
       <button type="submit" class="btn-submit" [disabled]="loading">
         {{ loading ? 'Creating account...' : 'Create Account' }}
       </button>
+
     </form>
 
     <p class="login-link">
       Already have an account? <a routerLink="/auth/login">Sign in</a>
     </p>
+
+    <!-- No mention of roles anywhere in the UI -->
+
   </div>
 </div>

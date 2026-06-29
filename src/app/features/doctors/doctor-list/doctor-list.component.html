@@ -1,4 +1,4 @@
-<div class="doc-list-page">
+<div class="doc-list-page">Doctor
 
   <!-- ── Page Header ───────────────────────────────────────────────────────── -->
   <div class="page-header">
@@ -8,10 +8,9 @@
         {{ pagedResult.totalCount }} doctor{{ pagedResult.totalCount !== 1 ? 's' : '' }} found
       </p>
     </div>
-    <button class="btn-add" *ngIf="auth.isAdmin()"
-            routerLink="/doctors/new">
-      + Add Doctor
-    </button>
+    <button class="btn-add" *ngIf="auth.isAdmin()" (click)="openAddDoctor()">
+  + Add Doctor
+</button>
   </div>
 
   <!-- ── Filters ───────────────────────────────────────────────────────────── -->

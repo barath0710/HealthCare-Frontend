@@ -3,11 +3,238 @@
   <div class="modal-box" (click)="$event.stopPropagation()">
 
     <div class="modal-header">
-      <h3>{{ type === 'schedule' ? '🗓️ Doctor Schedules' : '⏰ Book an Appointment' }}</h3>
+      <!-- <h3>{{ type === 'schedule' ? '🗓️ Doctor Schedules' : '⏰ Book an Appointment' }}</h3> -->
+
+      <h3>
+  {{ type === 'schedule'    ? '🗓️ Doctor Schedules'      :
+     type === 'booking'     ? '⏰ Book an Appointment'    :
+     type === 'addDoctor'   ? '👨‍⚕️ Add Doctor Profile'     :
+     type === 'addPatient'  ? '🧑 Add Patient Profile'    :
+     type === 'editPatient' ? '✏️ Edit Patient Profile'   :
+     type === 'viewPatient' ? '👤 Patient Details'        : '' }}
+</h3>
       <button class="modal-close" (click)="close()">✕</button>
     </div>
 
     <div class="modal-body">
+
+<!-- ADD PATIENT MODAL -->
+<ng-container *ngIf="type === 'addPatient'">
+  <form (ngSubmit)="submitAddPatient()">
+
+    <div class="form-field">
+      <label>User ID <span class="req">*</span></label>
+      <input type="number" [(ngModel)]="patientForm.userId"
+             name="userId" placeholder="User ID with PATIENT role">
+      <span class="field-err" *ngIf="patientFormErrors['userId']">
+        {{ patientFormErrors['userId'] }}
+      </span>
+      <small class="field-hint">
+        The user must be registered with role = Patient.
+      </small>
+    </div>
+
+    <div class="form-field">
+      <label>Date of birth <span class="req">*</span></label>
+      <input type="date" [(ngModel)]="patientForm.dateOfBirth"
+             name="dateOfBirth" [max]="minDate">
+      <span class="field-err" *ngIf="patientFormErrors['dateOfBirth']">
+        {{ patientFormErrors['dateOfBirth'] }}
+      </span>
+    </div>
+
+    <div class="form-row">
+      <div class="form-field">
+        <label>Gender <span class="req">*</span></label>
+        <select [(ngModel)]="patientForm.genderId" name="genderId">
+          <option [ngValue]="null" disabled>Select gender</option>
+          <option *ngFor="let g of genders" [ngValue]="g.id">{{ g.name }}</option>
+        </select>
+        <span class="field-err" *ngIf="patientFormErrors['genderId']">
+          {{ patientFormErrors['genderId'] }}
+        </span>
+      </div>
+
+      <div class="form-field">
+        <label>Blood group <span class="req">*</span></label>
+        <select [(ngModel)]="patientForm.bloodGroupId" name="bloodGroupId">
+          <option [ngValue]="null" disabled>Select blood group</option>
+          <option *ngFor="let b of bloodGroups" [ngValue]="b.id">{{ b.name }} ({{ b.code }})</option>
+        </select>
+        <span class="field-err" *ngIf="patientFormErrors['bloodGroupId']">
+          {{ patientFormErrors['bloodGroupId'] }}
+        </span>
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label>Address <span class="req">*</span></label>
+      <textarea [(ngModel)]="patientForm.address" name="address"
+                rows="2" maxlength="255" placeholder="Home address"></textarea>
+      <span class="field-err" *ngIf="patientFormErrors['address']">
+        {{ patientFormErrors['address'] }}
+      </span>
+    </div>
+
+    <div class="form-row">
+      <div class="form-field">
+        <label>Emergency contact name</label>
+        <input type="text" [(ngModel)]="patientForm.emergencyContactName"
+               name="ecName" placeholder="Contact name">
+      </div>
+      <div class="form-field">
+        <label>Emergency contact phone</label>
+        <input type="text" [(ngModel)]="patientForm.emergencyContactPhone"
+               name="ecPhone" placeholder="Phone number">
+      </div>
+    </div>
+
+    <button type="submit" class="btn-primary" [disabled]="patientFormLoading">
+      {{ patientFormLoading ? 'Creating...' : '+ Create Patient Profile' }}
+    </button>
+
+  </form>
+</ng-container>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- EDIT PATIENT MODAL -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<ng-container *ngIf="type === 'editPatient'">
+  <form (ngSubmit)="submitEditPatient()">
+
+    <div class="form-row">
+      <div class="form-field">
+        <label>Gender <span class="req">*</span></label>
+        <select [(ngModel)]="patientForm.genderId" name="genderId">
+          <option [ngValue]="null" disabled>Select gender</option>
+          <option *ngFor="let g of genders" [ngValue]="g.id">{{ g.name }}</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Blood group <span class="req">*</span></label>
+        <select [(ngModel)]="patientForm.bloodGroupId" name="bloodGroupId">
+          <option [ngValue]="null" disabled>Select blood group</option>
+          <option *ngFor="let b of bloodGroups" [ngValue]="b.id">{{ b.name }} ({{ b.code }})</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label>Address <span class="req">*</span></label>
+      <textarea [(ngModel)]="patientForm.address" name="address"
+                rows="2" maxlength="255" placeholder="Home address"></textarea>
+      <span class="field-err" *ngIf="patientFormErrors['address']">
+        {{ patientFormErrors['address'] }}
+      </span>
+    </div>
+
+    <div class="form-row">
+      <div class="form-field">
+        <label>Emergency contact name</label>
+        <input type="text" [(ngModel)]="patientForm.emergencyContactName"
+               name="ecName" placeholder="Contact name">
+      </div>
+      <div class="form-field">
+        <label>Emergency contact phone</label>
+        <input type="text" [(ngModel)]="patientForm.emergencyContactPhone"
+               name="ecPhone" placeholder="Phone number">
+      </div>
+    </div>
+
+    <button type="submit" class="btn-primary" [disabled]="patientFormLoading">
+      {{ patientFormLoading ? 'Saving...' : '💾 Save Changes' }}
+    </button>
+
+  </form>
+</ng-container>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- VIEW PATIENT MODAL -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<ng-container *ngIf="type === 'viewPatient'">
+  <app-patient-modal-view [patientId]="modal.modalData()?.patientId"></app-patient-modal-view>
+</ng-container>
+<!-- ADD DOCTOR MODAL -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<ng-container *ngIf="type === 'addDoctor'">
+
+  <form (ngSubmit)="submitAddDoctor()">
+
+    <div class="form-field">
+      <label>User ID <span class="req">*</span></label>
+      <input type="number" [(ngModel)]="addDoctorForm.userId"
+             name="userId" placeholder="Enter UserId with DOCTOR role">
+      <span class="field-err" *ngIf="addDoctorErrors['userId']">
+        {{ addDoctorErrors['userId'] }}
+      </span>
+      <small class="field-hint">
+        The user must already be registered with role = Doctor.
+      </small>
+    </div>
+
+    <div class="form-field">
+      <label>License Number <span class="req">*</span></label>
+      <input type="text" [(ngModel)]="addDoctorForm.licenseNumber"
+             name="licenseNumber" placeholder="e.g. MED-2024-001">
+      <span class="field-err" *ngIf="addDoctorErrors['licenseNumber']">
+        {{ addDoctorErrors['licenseNumber'] }}
+      </span>
+    </div>
+
+    <div class="form-field">
+      <label>Specialization <span class="req">*</span></label>
+      <select [(ngModel)]="addDoctorForm.specializationId" name="specializationId">
+        <option [ngValue]="null" disabled>Select specialization</option>
+        <option *ngFor="let s of specializations" [ngValue]="s.id">{{ s.name }}</option>
+      </select>
+      <span class="field-err" *ngIf="addDoctorErrors['specializationId']">
+        {{ addDoctorErrors['specializationId'] }}
+      </span>
+    </div>
+
+    <div class="form-field">
+      <label>Qualification <span class="req">*</span></label>
+      <input type="text" [(ngModel)]="addDoctorForm.qualification"
+             name="qualification" placeholder="e.g. MBBS, MD Cardiology">
+      <span class="field-err" *ngIf="addDoctorErrors['qualification']">
+        {{ addDoctorErrors['qualification'] }}
+      </span>
+    </div>
+
+    <div class="form-row">
+      <div class="form-field">
+        <label>Experience (years) <span class="req">*</span></label>
+        <input type="number" [(ngModel)]="addDoctorForm.experienceYears"
+               name="experienceYears" placeholder="e.g. 10" min="0" max="60">
+        <span class="field-err" *ngIf="addDoctorErrors['experienceYears']">
+          {{ addDoctorErrors['experienceYears'] }}
+        </span>
+      </div>
+
+      <div class="form-field">
+        <label>Consultation Fee (₹) <span class="req">*</span></label>
+        <input type="number" [(ngModel)]="addDoctorForm.consultationFee"
+               name="consultationFee" placeholder="e.g. 800" min="1">
+        <span class="field-err" *ngIf="addDoctorErrors['consultationFee']">
+          {{ addDoctorErrors['consultationFee'] }}
+        </span>
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label>Bio <span class="opt">(optional)</span></label>
+      <textarea [(ngModel)]="addDoctorForm.bio" name="bio"
+                rows="3" maxlength="1000"
+                placeholder="Brief description about the doctor..."></textarea>
+    </div>
+
+    <button type="submit" class="btn-primary" [disabled]="addDoctorLoading">
+      {{ addDoctorLoading ? 'Creating...' : '+ Create Doctor Profile' }}
+    </button>
+
+  </form>
+
+</ng-container>
 
       <!-- ══════════════════════════════════════════════════════════════ -->
       <!-- SCHEDULE MODAL -->
@@ -69,6 +296,7 @@
 
       </ng-container>
 
+      
       <!-- ══════════════════════════════════════════════════════════════ -->
       <!-- BOOKING MODAL -->
       <!-- ══════════════════════════════════════════════════════════════ -->

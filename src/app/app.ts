@@ -20,6 +20,7 @@ import { AppModalComponent } from './shared/components/app-modal/app-modal';
         </div>
       </main>
     </div>
+    <app-app-modal></app-app-modal>
   `,
   styles: [`
     .app-shell { display:flex; min-height:100vh; background:#f0f2f5; }

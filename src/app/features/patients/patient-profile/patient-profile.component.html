@@ -1,0 +1,91 @@
+<div class="profile-page">
+
+  <div class="loader-wrap" *ngIf="loading">
+    <div class="spinner"></div>
+  </div>
+
+  <div class="no-profile" *ngIf="!loading && !patient">
+    <div class="empty-icon">🧑</div>
+    <h3>Profile not found</h3>
+    <p>Your patient profile hasn't been created yet. Please contact admin.</p>
+  </div>
+
+  <div *ngIf="!loading && patient">
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-avatar">{{ initials(patient.fullName) }}</div>
+      <div class="hero-info">
+        <h2>{{ patient.fullName }}</h2>
+        <p class="hero-sub">
+          {{ age }} years old · {{ patient.genderName }} ·
+          <span class="blood-tag">{{ patient.bloodGroupCode }}</span>
+        </p>
+      </div>
+      <button class="btn-edit" (click)="editProfile()">✏️ Edit Profile</button>
+    </div>
+
+    <!-- Info sections -->
+    <div class="sections">
+
+      <div class="info-card">
+        <h3 class="card-title">Personal Information</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-lbl">Full name</span>
+            <span class="info-val">{{ patient.fullName }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-lbl">Date of birth</span>
+            <span class="info-val">{{ patient.dateOfBirth | date:'dd MMM yyyy' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-lbl">Age</span>
+            <span class="info-val">{{patient.age}} years</span>
+          </div>
+          <div class="info-item">
+            <span class="info-lbl">Gender</span>
+            <span class="info-val">{{ patient.genderName }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-lbl">Blood group</span>
+            <span class="info-val blood">{{ patient.bloodGroupCode }}</span>
+          </div>
+          <div class="info-item full">
+            <span class="info-lbl">Address</span>
+            <span class="info-val">{{ patient.address }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <h3 class="card-title">Contact Information</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-lbl">Email</span>
+            <span class="info-val">{{ patient.email }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-lbl">Phone</span>
+            <span class="info-val">{{ patient.phoneNumber }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-card" *ngIf="patient.emergencyContactName || patient.emergencyContactPhone">
+        <h3 class="card-title">Emergency Contact</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-lbl">Name</span>
+            <span class="info-val">{{ patient.emergencyContactName || '—' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-lbl">Phone</span>
+            <span class="info-val">{{ patient.emergencyContactPhone || '—' }}</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

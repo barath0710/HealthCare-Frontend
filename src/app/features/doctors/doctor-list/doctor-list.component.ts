@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit ,OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -8,6 +8,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { DoctorListItem } from '../../../core/models/doctor.model';
 import { PagedResult } from '../../../core/models/api.model';
 import Swal from 'sweetalert2';
+import { ModalService } from '../../../core/services/modal.service';
 
 @Component({
   selector: 'app-doctor-list',
@@ -16,7 +17,20 @@ import Swal from 'sweetalert2';
   templateUrl: './doctor-list.component.html',
   styleUrls: ['./doctor-list.component.scss']
 })
-export class DoctorListComponent implements OnInit {
+export class DoctorListComponent implements OnInit , OnDestroy {
+  private refreshListener = () => this.loadDoctors();
+
+  ngOnInit(): void {
+    this.loadSpecializations();
+    this.loadDoctors();
+
+    // Refresh list when doctor is added via modal
+    window.addEventListener('doctorAdded', this.refreshListener);
+  }
+
+  ngOnDestroy(): void {
+    window.removeEventListener('doctorAdded', this.refreshListener);
+  }
 
   // Datas
   doctors: DoctorListItem[]   = [];
@@ -37,14 +51,14 @@ export class DoctorListComponent implements OnInit {
     private doctorSvc: DoctorService,
     private lookupSvc: LookupService,
     public  auth:      AuthService,
-    private router:    Router
+    private router:    Router,
+    public modal : ModalService
   ) {}
 
-  ngOnInit(): void {
-    this.loadSpecializations();
-    this.loadDoctors();
-  }
-
+  openAddDoctor(): void {
+  this.modal.open('addDoctor');
+  console.log(this.modal.activeModal());
+}
   // Loaders
   loadDoctors(): void {
     this.loading = true;

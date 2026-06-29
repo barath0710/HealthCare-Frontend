@@ -5,6 +5,7 @@ import { Subscription } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { SignalrService } from '../../../core/services/signalr.service';
 import { ModalService } from '../../../core/services/modal.service';
+import { routes } from '../../../app.routes';
 
 @Component({
   selector: 'app-sidebar',
@@ -18,9 +19,11 @@ export class SidebarComponent implements OnInit, OnDestroy {
   private sub = new Subscription();
 
   navItems = [
-    { label: 'Dashboard',    icon: '📊', route: '/dashboard',    roles: ['ADMIN','DOCTOR','PATIENT'] },
-    { label: 'Doctors',      icon: '👨‍⚕️', route: '/doctors',      roles: ['ADMIN','PATIENT'] },
-    { label: 'Patients',     icon: '🧑', route: '/patients',     roles: ['ADMIN','DOCTOR'] },
+    { label: 'Dashboard',icon: '📊', route: '/dashboard',roles: ['ADMIN','DOCTOR','PATIENT'] },
+    { label: 'Doctors',icon: '👨‍⚕️', route: '/doctors',roles: ['ADMIN','PATIENT'] },
+    {label : 'admin',icon:'🛡️',route:'/admin',roles:['ADMIN']},
+    { label: 'Patients',icon: '🧑', route: '/patients',roles: ['ADMIN','DOCTOR'] },
+    { label: 'My Profile',icon: '👤', route: '/patients/my-profile', roles: ['PATIENT',] },
     { label: 'Appointments', icon: '📅', route: '/appointments', roles: ['ADMIN','DOCTOR','PATIENT'] },
   ];
 

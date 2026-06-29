@@ -16,6 +16,7 @@ export class RegisterComponent implements OnInit {
   form!: FormGroup;
   loading = false;
   roles: any[] = [];
+  showPw = false;
 
   constructor(
     private fb: FormBuilder,
@@ -31,7 +32,6 @@ export class RegisterComponent implements OnInit {
       password:    ['', [Validators.required, Validators.minLength(8),
                          Validators.pattern(/^(?=.*[A-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).+$/)]],
       phoneNumber: ['', [Validators.required, Validators.pattern(/^\+?[0-9]{10,15}$/)]],
-      userRoleId:  [null, Validators.required]
     }); 
 
     this.auth.getRoles().subscribe(res => {
@@ -42,12 +42,12 @@ export class RegisterComponent implements OnInit {
   submit(): void {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     this.loading = true;
-    this.auth.register({ ...this.form.value, userRoleId: +this.form.value.userRoleId }).subscribe({
+    this.auth.register({ ...this.form.value,userRoleId : 3 }).subscribe({
       next: res => {
-         this.loading = false;
+         this.loading = false;  
         Swal.fire({ icon:'success', title:'Account Created!', text:'Please Login...',
           confirmButtonText:'Go to Login'
-      }).then(() =>{
+      }).then(() =>{  
       this.router.navigate(['/auth/login'])
   });
 },

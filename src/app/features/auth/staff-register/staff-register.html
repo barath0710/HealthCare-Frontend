@@ -1,0 +1,85 @@
+<div class="staff-reg-wrap">
+  <div class="staff-reg-card">
+
+    <div class="staff-header">
+      <button class="btn-back" routerLink="/admin">← Back to Admin</button>
+      <h2>Register Staff Account</h2>
+      <p>Create a new Doctor or Admin account. Role is set by admin only.</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+
+      <div class="row-2">
+        <div class="field">
+          <label>First name <span class="req">*</span></label>
+          <input type="text" formControlName="firstName" placeholder="First name"
+                 [class.invalid]="f('firstName')?.invalid && f('firstName')?.touched">
+          <span class="err" *ngIf="f('firstName')?.errors?.['required'] && f('firstName')?.touched">Required.</span>
+        </div>
+        <div class="field">
+          <label>Last name <span class="req">*</span></label>
+          <input type="text" formControlName="lastName" placeholder="Last name"
+                 [class.invalid]="f('lastName')?.invalid && f('lastName')?.touched">
+          <span class="err" *ngIf="f('lastName')?.errors?.['required'] && f('lastName')?.touched">Required.</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Email <span class="req">*</span></label>
+        <input type="email" formControlName="email" placeholder="staff@hospital.com"
+               [class.invalid]="f('email')?.invalid && f('email')?.touched">
+        <span class="err" *ngIf="f('email')?.errors?.['email'] && f('email')?.touched">
+          Enter a valid email.
+        </span>
+      </div>
+
+      <div class="field">
+        <label>Temporary password <span class="req">*</span></label>
+        <div class="pw-wrap">
+          <input [type]="showPw ? 'text' : 'password'"
+                 formControlName="password" placeholder="Min 8 chars, 1 uppercase, 1 number, 1 special"
+                 [class.invalid]="f('password')?.invalid && f('password')?.touched">
+          <button type="button" (click)="showPw = !showPw">
+            {{ showPw ? '🙈' : '👁️' }}
+          </button>
+        </div>
+        <span class="err" *ngIf="f('password')?.errors?.['pattern'] && f('password')?.touched">
+          Must include uppercase, number and special character.
+        </span>
+      </div>
+
+      <div class="field">
+        <label>Phone <span class="req">*</span></label>
+        <input type="text" formControlName="phoneNumber" placeholder="9876543210"
+               [class.invalid]="f('phoneNumber')?.invalid && f('phoneNumber')?.touched">
+      </div>
+
+      <!-- Role — visible ONLY in admin staff registration -->
+      <div class="field">
+        <label>Role <span class="req">*</span></label>
+        <div class="role-options">
+          <label class="role-card" *ngFor="let r of staffRoles"
+                 [class.selected]="f('userRoleId')?.value == r.id">
+            <input type="radio" formControlName="userRoleId" [value]="r.id">
+            <span class="role-icon">{{ r.code === 'ADMIN' ? '🛡️' : '👨‍⚕️' }}</span>
+            <span class="role-name">{{ r.name }}</span>
+          </label>
+        </div>
+        <span class="err" *ngIf="f('userRoleId')?.errors?.['required'] && f('userRoleId')?.touched">
+          Select a role.
+        </span>
+      </div>
+
+      <div class="info-box">
+        ℹ️ After creating the account, share the credentials with the staff member.
+        For Doctors — you'll still need to create their Doctor Profile from the Doctors section.
+      </div>
+
+      <button type="submit" class="btn-submit" [disabled]="loading">
+        {{ loading ? 'Creating...' : '+ Create Staff Account' }}
+      </button>
+
+    </form>
+
+  </div>
+</div>

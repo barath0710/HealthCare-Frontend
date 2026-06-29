@@ -1,0 +1,96 @@
+<div class="patient-list-page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h2 class="page-title">Patients</h2>
+      <p class="page-sub" *ngIf="pagedResult">
+        {{ pagedResult.totalCount }} patient{{ pagedResult.totalCount !== 1 ? 's' : '' }} registered
+      </p>
+    </div>
+    <button class="btn-add" *ngIf="auth.isAdmin()" (click)="openAddPatient()">
+      + Add Patient
+    </button>
+  </div>
+
+  <!-- Search -->
+  <div class="search-bar">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" [(ngModel)]="search" (ngModelChange)="onSearch()"
+             placeholder="Search by name, email or phone..."
+             class="search-input">
+      <button class="clear-btn" *ngIf="search" (click)="clearSearch()">✕</button>
+    </div>
+  </div>
+
+  <!-- Loader -->
+  <div class="loader-wrap" *ngIf="loading">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="!loading && patients.length === 0">
+    <div class="empty-icon">🧑</div>
+    <h3>No patients found</h3>
+    <p *ngIf="search">Try adjusting your search term.</p>
+    <button class="btn-add" *ngIf="auth.isAdmin() && !search"
+            (click)="openAddPatient()">
+      Add first patient
+    </button>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap" *ngIf="!loading && patients.length > 0">
+    <table class="patient-table">
+      <thead>
+        <tr>
+          <th>Patient</th>
+          <th>Age / Gender</th>
+          <th>Blood Group</th>
+          <th>Phone</th>
+          <th>Email</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of patients">
+          <td>
+            <div class="patient-name-cell">
+              <div class="avatar">{{ initials(p.fullName) }}</div>
+              <span class="patient-name">{{ p.fullName }}</span>
+            </div>
+          </td>
+          <td>
+            <span class="age">{{ p.age }} yrs</span>
+            <span class="gender-badge">{{ p.genderName }}</span>
+          </td>
+          <td>
+            <span class="blood-badge">{{ p.bloodGroupCode }}</span>
+          </td>
+          <td class="muted">{{ p.phoneNumber }}</td>
+          <td class="muted email">{{ p.email }}</td>
+          <td>
+            <div class="action-btns">
+              <button class="act-view" (click)="viewPatient(p.id)">View</button>
+              <button class="act-edit" *ngIf="auth.isAdmin()"
+                      (click)="editPatient(p)">Edit</button>
+              <button class="act-del" *ngIf="auth.isAdmin()"
+                      (click)="deletePatient(p)">Delete</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination" *ngIf="pagedResult && pagedResult.totalPages > 1">
+    <button class="pg-btn" [disabled]="page === 1" (click)="goToPage(page - 1)">← Prev</button>
+    <button *ngFor="let p of pages" class="pg-btn"
+            [class.pg-active]="p === page" (click)="goToPage(p)">{{ p }}</button>
+    <button class="pg-btn" [disabled]="page === pagedResult.totalPages"
+            (click)="goToPage(page + 1)">Next →</button>
+  </div>
+
+</div>

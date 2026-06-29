@@ -6,6 +6,7 @@ import { DoctorService } from '../../../core/services/doctor.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Doctor, AvailableSlots } from '../../../core/models/doctor.model';
 import Swal from 'sweetalert2';
+import { ModalService } from '../../../core/services/modal.service';
 
 @Component({
   selector: 'app-doctor-detail',
@@ -32,10 +33,12 @@ export class DoctorDetailComponent implements OnInit {
     private route:     ActivatedRoute,
     private router:    Router,
     private doctorSvc: DoctorService,
-    public  auth:      AuthService
+    public  auth:      AuthService,
+    public modal : ModalService
   ) {}
 
   ngOnInit(): void {
+
     // Set minimum date to today
     const today  = new Date();
     this.minDate = today.toISOString().split('T')[0];
@@ -44,10 +47,12 @@ export class DoctorDetailComponent implements OnInit {
     const id = Number(this.route.snapshot.paramMap.get('id'));
     this.loadDoctor(id);
 
+
     if (this.auth.isAdmin()) {
       this.loadPendingRequests();
     }
   }
+  
 
   // Loaders 
   loadDoctor(id: number): void {
@@ -96,6 +101,10 @@ export class DoctorDetailComponent implements OnInit {
   //  Date change 
   onDateChange(): void {
     this.loadSlots();
+  }
+
+  openAddDoctor() : void{
+    this.modal.open('addDoctor')
   }
 
   // Back Button
@@ -149,7 +158,7 @@ export class DoctorDetailComponent implements OnInit {
     });
   }
 
-  // ── Admin: approve/reject delete request ──────────────────────────────────
+  // Admin: approve/reject delete request 
   reviewRequest(requestId: number, approve: boolean): void {
     const action = approve ? 'approve' : 'reject';
     Swal.fire({
@@ -176,7 +185,7 @@ export class DoctorDetailComponent implements OnInit {
     });
   }
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
+  //Helpers
   get dayName(): string {
     if (!this.selectedDate) return '';
     return new Date(this.selectedDate + 'T00:00:00')
